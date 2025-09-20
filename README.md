@@ -1506,7 +1506,7 @@
                         @media print { body { margin: 0; } }
                     </style>
                 </head>
-                <body>
+                <body onload="window.print()">
                     <div class="header">
                         <h1>📊 ${companyName}</h1>
                         <h2>Çalışan Memnuniyet Anketi Raporu</h2>
@@ -1613,6 +1613,31 @@
                                     }).join('')}
                                 </tbody>
                             </table>
+                        </div>
+                        <!-- İşletme için özel strateji ve aksiyon planı bölümü -->
+                        <div style="background: #fff; border-radius: 8px; margin: 20px 0; padding: 24px 18px; border-left: 5px solid #6366f1; box-shadow: 0 2px 8px #e0e7ff;">
+                            <h3 style="font-size: 1.4em; font-weight: bold; color: #3730a3; margin-bottom: 12px;">2. Stratejik Öneriler</h3>
+                            <p style="color: #374151; margin-bottom: 12px;">Anket sonuçları, şirket genelinde güçlü ve zayıf alanları net bir şekilde ortaya koymaktadır. Özellikle <b>Maaş ve Yan Haklar</b> ile <b>Kariyer Fırsatları</b> kategorilerindeki düşük puanlar, çalışan memnuniyetsizliğinin temel kaynağına işaret etmektedir. Öte yandan, <b>Dijital Dönüşüm</b> ve <b>Çalışma Ortamı</b> gibi alanlardaki yüksek puanlar, kurumun doğru yatırımlar yaptığını ve bu başarıları bir marka değeri olarak kullanabileceğini göstermektedir.</p>
+                            <ul style="margin-left: 18px; color: #374151;">
+                                <li><b style="color:#dc2626;">Acil Müdahale Gerektiren Alanlar:</b> Düşük puan alan kategorilerde (Maaş ve Yan Haklar, Kariyer Fırsatları) hızlı ve şeffaf iyileştirme adımları atılmalıdır. Bu durum, çalışan devir hızını artırma ve yetenekli personeli kaybetme riskini taşımaktadır.</li>
+                                <li><b style="color:#16a34a;">Güçlü Yönlerin Korunması:</b> Yüksek puan alan kategorilerdeki başarılar (Dijital Dönüşüm, Çalışma Ortamı) sürdürülmelidir. Bu alanlardaki pozitif algı, yeni yetenekleri çekmek için kullanılabilir ve iç motivasyonu pekiştirir.</li>
+                                <li><b style="color:#f59e0b;">İletişimin Güçlendirilmesi:</b> Yönetim ve İletişim kategorisindeki orta düzey puanlar, daha proaktif bir yaklaşım gerektirmektedir. Düzenli "nabız anketleri" ve açık iletişim toplantıları ile çalışanların kendilerini daha fazla dinlenmiş hissetmeleri sağlanmalıdır.</li>
+                            </ul>
+                            <h3 style="font-size: 1.4em; font-weight: bold; color: #3730a3; margin: 24px 0 12px 0;">3. Aksiyon Planı</h3>
+                            <div style="display: flex; flex-direction: column; gap: 16px;">
+                                <div style="background: #eef2ff; border-left: 4px solid #6366f1; border-radius: 6px; padding: 14px 18px;">
+                                    <b style="color:#3730a3;">1. Ücret ve Kariyer Gelişim Planı Hazırlığı</b>
+                                    <p style="margin: 6px 0 0 0; color: #374151;">İnsan Kaynakları ve yönetim ekibi, piyasa araştırması yaparak rekabetçi bir maaş düzenlemesi ve her çalışan için net bir kariyer gelişim yolu belirleyecektir. Bu plan, önümüzdeki 3 ay içinde çalışanlarla paylaşılacaktır.</p>
+                                </div>
+                                <div style="background: #eef2ff; border-left: 4px solid #6366f1; border-radius: 6px; padding: 14px 18px;">
+                                    <b style="color:#3730a3;">2. Nabız Anketi Uygulaması</b>
+                                    <p style="margin: 6px 0 0 0; color: #374151;">İlk anketin üzerinden 6 ay geçtikten sonra daha kısa ve odaklanmış bir "nabız anketi" uygulanacaktır. Bu anket, yapılan iyileştirmelerin çalışanlar üzerindeki etkisini ölçecek ve anlık geri bildirim sağlayacaktır.</p>
+                                </div>
+                                <div style="background: #eef2ff; border-left: 4px solid #6366f1; border-radius: 6px; padding: 14px 18px;">
+                                    <b style="color:#3730a3;">3. Liderlik Gelişim Programı</b>
+                                    <p style="margin: 6px 0 0 0; color: #374151;">Yönetim ve İletişim puanlarını artırmak için tüm yöneticilere liderlik, geri bildirim verme ve iletişim becerileri üzerine kapsamlı bir eğitim programı başlatılacaktır.</p>
+                                </div>
+                            </div>
                         </div>
                         
                         <div style="background: #f1f8e9; padding: 15px; border-radius: 8px; margin: 15px 0; border-left: 4px solid #689f38;">
