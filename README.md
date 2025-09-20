@@ -65,7 +65,7 @@
     <div id="surveyModule" class="container mx-auto p-4">
         <div class="bg-white shadow-xl rounded-xl max-w-2xl mx-auto p-6">
             <div class="text-center mb-6">
-                <h2 class="text-2xl font-bold text-gray-800">Çalışan Memnuniyet Anketi</h2>
+                <h2 class="text-2xl font-bold text-gray-800">İşletme Yönetim Anketi</h2>
                 <p class="text-gray-600 mt-2">Görüşleriniz bizim için değerli</p>
                 <span class="bg-green-100 text-green-800 text-xs font-semibold px-2 py-1 rounded-full">v3.0.0 - JSONBin.io Entegre</span>
             </div>
@@ -737,7 +737,7 @@
                 console.error('JSONBin yükleme hatası:', error);
                 // Varsayılan yapı döndür
                 const defaultData = {
-                    surveyName: "Çalışan Memnuniyet Anketi - Sürüm 12",
+                    surveyName: "İşletme Yönetim Anketi - Sürüm 12",
                     createdAt: new Date().toISOString(),
                     responses: [],
                     statistics: {
@@ -1514,7 +1514,7 @@
                 <body onload="window.print()">
                     <div class="header">
                         <h1>📊 ${companyName}</h1>
-                        <h2>Çalışan Memnuniyet Anketi Raporu</h2>
+                        <h2>İşletme Yönetim Anketi Raporu</h2>
                         <p>Rapor Tarihi: ${new Date().toLocaleDateString('tr-TR')}</p>
                     </div>
                     
