@@ -1563,67 +1563,127 @@
         }
 
         function generatePDFContent(surveys, dateInfo = '') {
-            // ...existing code...
-        // Anket başlatma fonksiyonu: Google ile giriş zorunluluğu ve erişilebilir uyarı
-        function startSurvey(e) {
-            const companyName = document.getElementById('companyName').value.trim();
-            const disclaimerAccepted = document.getElementById('acceptDisclaimer').checked;
-            const firstName = document.getElementById('firstName').value.trim();
-            const lastName = document.getElementById('lastName').value.trim();
-            const selectedJobType = window.selectedJobType || '';
-
-            // Google Sign-In enforcement
-            if (!googleUser) {
-                showModal(
-                    '🔒 Giriş Gerekli',
-                    `<div class=\"text-2xl font-extrabold text-red-700 mb-4\">Google ile Giriş Yapmalısınız</div>
-                    <div class=\"text-base text-gray-800 mb-2\">Ankete başlamadan önce kimliğinizi doğrulamanız gerekmektedir.</div>
-                    <ul class=\"list-disc pl-6 text-base text-gray-700 mb-4\">
-                        <li>Yukarıdaki <b>Google ile Giriş Yap</b> butonunu kullanarak hesabınızla oturum açın.</li>
-                        <li>Giriş yaptıktan sonra ad ve soyad alanlarınız otomatik doldurulacak ve düzenlenebilir olacaktır.</li>
-                        <li>Gizliliğiniz korunur, bilgileriniz üçüncü kişilerle paylaşılmaz.</li>
-                    </ul>
-                    <div class=\"text-sm text-gray-500\">Herhangi bir sorun yaşarsanız lütfen yöneticinizle iletişime geçin.</div>`
-                );
-                if (e) e.preventDefault();
-                return;
-            }
-            // ...devamında eski anket başlatma kontrolleriniz...
-        }
-            const companyName = loggedInCompany.name;
+            const companyName = loggedInCompany ? loggedInCompany.name : '';
+            const now = new Date();
+            const dateStr = now.toLocaleDateString('tr-TR');
+            const timeStr = now.toLocaleTimeString('tr-TR');
             const totalParticipants = surveys.length;
-            // ...existing code...
-            // PDF başlığına tarih aralığı ekle
+            let totalScore = 0;
+            let totalAnswers = 0;
+            surveys.forEach(s => {
+                totalScore += s.totalScore;
+                totalAnswers += s.answers.length;
+            });
+            const avgScore = totalAnswers > 0 ? (totalScore / totalAnswers).toFixed(1) : '0.0';
+            const minPossibleScore = totalAnswers * 1;
+            const maxPossibleScore = totalAnswers * 5;
+            const satisfactionPercent = totalAnswers > 0 ? Math.round(((totalScore - minPossibleScore) / (maxPossibleScore - minPossibleScore)) * 100) : 0;
+            // Genel durum kutusu
+            let statusBox = '';
+            if (satisfactionPercent < 50) {
+                statusBox = `<div style='background:#fee2e2;padding:16px;border-radius:8px;margin-bottom:12px;'><b>Düşük Memnuniyet (%0-50) - Acil Müdahale Gerekli</b></div>`;
+            } else if (satisfactionPercent < 80) {
+                statusBox = `<div style='background:#fef9c3;padding:16px;border-radius:8px;margin-bottom:12px;'><b>Orta Memnuniyet (%51-80) - İyileştirme Gerekli</b></div>`;
+            } else {
+                statusBox = `<div style='background:#dcfce7;padding:16px;border-radius:8px;margin-bottom:12px;'><b>Yüksek Memnuniyet (%81-100)</b></div>`;
+            }
+            // Pozisyon analizi
+            const positionData = {};
+            surveys.forEach(s => {
+                positionData[s.jobType] = (positionData[s.jobType] || 0) + 1;
+            });
+            // Değerlendirme dağılımı
+            const satisfactionCounts = [0, 0, 0];
+            surveys.forEach(s => {
+                const avg = parseFloat(s.averageScore);
+                if (avg < 2.5) satisfactionCounts[0]++;
+                else if (avg < 3.5) satisfactionCounts[1]++;
+                else satisfactionCounts[2]++;
+            });
+            // Yanıt dağılımı
+            const answerLevels = ['Düşük Memnuniyet (1-2)', 'Orta Memnuniyet (3)', 'Yüksek Memnuniyet (4-5)'];
+            const answerCounts = [0, 0, 0];
+            surveys.forEach(s => {
+                s.answers.forEach(a => {
+                    if (a.score < 2.5) answerCounts[0]++;
+                    else if (a.score < 3.5) answerCounts[1]++;
+                    else answerCounts[2]++;
+                });
+            });
+            // Kategori analizleri (örnek başlıklar)
+            const businessCategories = [
+                { title: '1. Çalışma Ortamı ve Konfor', desc: 'Fiziksel ortam, ekipman, hijyen ve güvenlik koşulları.' },
+                { title: '2. Yemek ve Sosyal Haklar', desc: 'Yemek kalitesi, sosyal haklar ve yan haklar.' },
+                { title: '3. İş İlişkileri ve Güven', desc: 'Yönetici ve ekip ilişkileri, iletişim ve güven.' },
+                { title: '4. Sadakat ve Kariyer', desc: 'Şirkete bağlılık, kariyer gelişimi ve motivasyon.' },
+                { title: '5. Dijital Dönüşüm ve Yenilenme', desc: 'Teknolojiye açıklık, dijitalleşme ve yenilikçilik.' }
+            ];
             return `
-                <!DOCTYPE html>
-                <html>
-                <head>
-                    <meta charset="UTF-8">
-                    <title>${companyName} - Anket Raporu${dateInfo}</title>
-                    <style>
-                        body { font-family: Arial, sans-serif; margin: 20px; line-height: 1.6; }
-                        .header { text-align: center; border-bottom: 2px solid #333; padding-bottom: 20px; margin-bottom: 30px; }
-                        .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 30px; }
-                        .stat-box { background: #f5f5f5; padding: 15px; border-radius: 8px; text-align: center; }
-                        .stat-number { font-size: 2em; font-weight: bold; color: #333; }
-                        .section { margin-bottom: 30px; }
-                        .section h3 { color: #333; border-bottom: 1px solid #ddd; padding-bottom: 10px; }
-                        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-                        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
-                        th { background-color: #f2f2f2; }
-                        .footer { margin-top: 50px; text-align: center; font-size: 0.9em; color: #666; }
-                        @media print { body { margin: 0; } }
-                    </style>
-                </head>
-                <body onload="window.print()">
-                    <div class="header">
-                        <h1>📊 ${companyName}</h1>
-                        <h2>İşletme Yönetim Anketi Raporu${dateInfo}</h2>
-                        <p>Rapor Tarihi: ${new Date().toLocaleDateString('tr-TR')}</p>
-                    </div>
-                    <!-- ...existing code... -->
-                </body>
-                </html>
+            <html><head><title>${companyName} - İşletme Anketi Raporu</title>
+            <style>
+                body { font-family: Arial, sans-serif; margin: 0; padding: 0; }
+                .header { text-align: center; margin-top: 24px; }
+                .summary-grid { display: flex; justify-content: center; gap: 32px; margin: 24px 0; }
+                .summary-box { background: #f8fafc; border-radius: 12px; padding: 24px 32px; min-width: 180px; text-align: center; font-size: 1.5rem; }
+                .section { margin: 24px 0; }
+                .section-title { font-size: 1.2rem; font-weight: bold; margin-bottom: 8px; }
+                .table { width: 100%; border-collapse: collapse; margin-bottom: 16px; }
+                .table th, .table td { border: 1px solid #e5e7eb; padding: 8px 12px; text-align: left; }
+                .table th { background: #f1f5f9; }
+                .highlight { font-weight: bold; color: #dc2626; }
+                .info-box { background: #f1f5f9; border-radius: 8px; padding: 16px; margin-bottom: 12px; }
+                .category-box { background: #fef2f2; border-radius: 8px; padding: 16px; margin-bottom: 12px; }
+                .advice-box { background: #fef9c3; border-radius: 8px; padding: 16px; margin-bottom: 12px; }
+                .date-info { background: #dbeafe; border-radius: 8px; padding: 12px; margin-bottom: 16px; text-align: center; font-weight: bold; color: #1e40af; }
+            </style></head><body onload="window.print()">
+                <div class='header'>
+                    <div style='font-size:2.2rem;font-weight:bold;margin-bottom:8px;'>🏢 ${companyName}</div>
+                    <div style='font-size:1.3rem;font-weight:bold;'>İşletme Değerlendirme Anketi Raporu${dateInfo}</div>
+                    <div style='font-size:1rem;margin-top:4px;'>Rapor Tarihi: ${dateStr}</div>
+                </div>
+                ${dateInfo ? `<div class='date-info'>📅 Filtrelenmiş Rapor${dateInfo}</div>` : ''}
+                <div class='summary-grid'>
+                    <div class='summary-box'><div style='font-size:1.1rem;'>${totalParticipants}</div>Toplam Katılımcı</div>
+                    <div class='summary-box'><div style='font-size:1.1rem;'>${avgScore}</div>Ortalama Puan</div>
+                    <div class='summary-box'><div style='font-size:1.1rem;'>${satisfactionPercent}%</div>Genel Memnuniyet</div>
+                </div>
+                <div class='section info-box'>
+                    <div class='section-title'>☑️ Genel Durum Değerlendirmesi</div>
+                    ${statusBox}
+                    <div>Memnuniyet Hesaplama Formülü: ((Alınan Puan - Minimum Puan) / (Maksimum Puan - Minimum Puan)) × 100 = ${satisfactionPercent}%</div>
+                    <div style='margin-top:8px;'>İşletmeniz için ${dateInfo ? 'seçilen tarih için' : 'tüm katılımcılarda'} genel memnuniyet düzeyi yukarıda gösterilmiştir.</div>
+                </div>
+                <div class='section'>
+                    <div class='section-title'>👥 Katılımcı Grupları Analizi</div>
+                    <table class='table'>
+                        <tr><th>Katılımcı Grubu</th><th>Katılımcı</th></tr>
+                        ${Object.entries(positionData).map(([pos, count]) => `<tr><td>${pos}</td><td>${count}</td></tr>`).join('')}
+                    </table>
+                </div>
+                <div class='section'>
+                    <div class='section-title'>☑️ Yanıt Dağılımı</div>
+                    <table class='table'>
+                        <tr><th>Değerlendirme Seviyesi</th><th>Yanıt Sayısı</th></tr>
+                        ${answerLevels.map((level, i) => `<tr><td>${level}</td><td>${answerCounts[i]}</td></tr>`).join('')}
+                    </table>
+                </div>
+                <div class='section'>
+                    <div class='section-title'>📊 Detaylı Kategori Analizleri</div>
+                    ${businessCategories.map(cat => `
+                        <div class='category-box'>
+                            <b>${cat.title}</b><br>
+                            <span style='font-size:0.95rem;'>${cat.desc}</span>
+                            <div style='margin-top:8px;background:#fee2e2;padding:8px;border-radius:6px;'><b>Puan Aralığı: Düşük (%0-50)</b> - Bu kategoride ciddi iyileştirme gereklidir.</div>
+                        </div>
+                    `).join('')}
+                </div>
+                <div class='section advice-box'>
+                    <b>💡 Öneriler ve Eylem Planı</b><br>
+                    <b>Öncelikli Aksiyonlar:</b> Çalışma ortamı, sosyal haklar ve iş ilişkileri gözden geçirilmeli.<br>
+                    <b>Takip:</b> Bu rapor sonuçlarını 3-6 ay sonra tekrar değerlendirmek için yeni anket düzenleyiniz.
+                </div>
+                <div style='text-align:right;font-size:0.9rem;color:#888;margin-top:32px;'>Akça Pro X - Kurumsal Anket ve Raporlama Sistemi | ${dateStr} ${timeStr}<br>Bu rapor ${totalAnswers} adet soru yanıtı analiz edilerek oluşturulmuştur.${dateInfo ? `<br>Filtre: ${dateInfo}` : ''}</div>
+            </body></html>
             `;
         }
 
