@@ -6,6 +6,10 @@
     <title>Akça Pro X - Kurumsal Anket ve Raporlama Sistemi</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Firebase App (the core Firebase SDK) -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <!-- Firebase Auth -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
     <style>
         body {
             font-family: 'Inter', sans-serif;
@@ -40,8 +44,8 @@
 </head>
 <body class="bg-gray-100 min-h-screen">
     <!-- Ana Navigasyon -->
-    <nav class="gradient-bg text-white p-4 shadow-lg">
-        <div class="container mx-auto flex justify-between items-center">
+    <nav class="gradient-bg text-white p-3 shadow-lg sticky top-0 z-50">
+        <div class="max-w-5xl mx-auto flex flex-col md:flex-row justify-between items-center gap-2 md:gap-0">
             <div class="flex items-center gap-2">
                 <!-- Gizli yönetici erişimi -->
                 <div onclick="showModule('admin')" class="w-4 h-4 cursor-pointer opacity-15 hover:opacity-50 transition-opacity" title="">
@@ -62,11 +66,11 @@
     </nav>
 
     <!-- Anket Modülü -->
-    <div id="surveyModule" class="container mx-auto p-4">
-        <div class="bg-white shadow-xl rounded-xl max-w-2xl mx-auto p-6">
+    <div id="surveyModule" class="max-w-5xl mx-auto p-2 md:p-4">
+        <div class="bg-white shadow-xl rounded-2xl max-w-2xl mx-auto p-4 md:p-8">
             <div class="text-center mb-6">
-                <h2 class="text-2xl font-bold text-gray-800">İşletme Yönetim Anketi</h2>
-                <p class="text-gray-600 mt-2">Görüşleriniz bizim için değerli</p>
+                <h2 class="text-2xl md:text-3xl font-extrabold text-gray-800 mb-1 tracking-tight">İşletme Yönetim Anketi</h2>
+                <p class="text-gray-600 mb-2 text-base md:text-lg">Görüşleriniz bizim için değerli</p>
                 <span class="bg-green-100 text-green-800 text-xs font-semibold px-2 py-1 rounded-full">v3.0.0 - JSONBin.io Entegre</span>
             </div>
 
@@ -88,34 +92,45 @@
             </div>
 
             <!-- Şirket Bilgileri -->
-            <div id="companyInfoSection" class="opacity-50 pointer-events-none">
-                <h3 class="text-base font-semibold text-gray-700 mb-2">Şirket ve Kişisel Bilgiler</h3>
-                <input type="text" id="companyName" placeholder="Şirket adınızı girin" class="w-full border rounded-lg px-3 py-2 mb-2 text-sm focus:ring-2 focus:ring-purple-500">
-                <div class="grid grid-cols-3 gap-2 mb-2">
-                    <button type="button" id="blueCollar" class="py-2 text-xs rounded-lg border hover:bg-blue-50 transition-colors">👷 Mavi Yaka</button>
-                    <button type="button" id="whiteCollar" class="py-2 text-xs rounded-lg border hover:bg-green-50 transition-colors">💼 Beyaz Yaka</button>
-                    <button type="button" id="management" class="py-2 text-xs rounded-lg border hover:bg-purple-50 transition-colors">👔 Yönetim</button>
+            <div id="companyInfoSection" class="">
+                <h3 class="text-base font-semibold text-gray-700 mb-3">Şirket ve Kişisel Bilgiler</h3>
+                <!-- Google ile Giriş Yap butonu -->
+                <div class="mb-3 flex flex-col items-center">
+                    <button id="googleSignInBtn" type="button" class="flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded shadow hover:bg-gray-100 text-gray-700 font-semibold mb-2">
+                        <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" class="w-5 h-5"> Google ile Giriş Yap
+                    </button>
+                    <div id="googleUserInfo" class="text-xs text-green-700 font-medium hidden"></div>
                 </div>
-                <div class="grid grid-cols-2 gap-2 mb-3">
-                    <input type="text" id="firstName" placeholder="Adınız (İsteğe bağlı)" class="border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-purple-500">
-                    <input type="text" id="lastName" placeholder="Soyadınız (İsteğe bağlı)" class="border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-purple-500">
+                <div class="mb-3">
+                    <input type="text" id="companyName" placeholder="Şirket adınızı girin" class="w-full border-2 border-purple-300 rounded px-3 py-2 text-sm focus:ring-2 focus:ring-purple-500 focus:border-purple-500">
                 </div>
-                <button id="startSurvey" class="w-full py-2 rounded-lg text-white font-semibold gradient-bg hover:opacity-90 transition-opacity text-sm">
+                <div class="mb-3">
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                        <button type="button" id="blueCollar" class="job-btn py-3 px-2 text-xs rounded border-2 border-blue-300 hover:border-blue-500 hover:bg-blue-50 transition-all duration-200 cursor-pointer font-medium bg-white text-center focus:outline-none focus:ring-2 focus:ring-blue-400">👷 Mavi Yaka</button>
+                        <button type="button" id="whiteCollar" class="job-btn py-3 px-2 text-xs rounded border-2 border-green-300 hover:border-green-500 hover:bg-green-50 transition-all duration-200 cursor-pointer font-medium bg-white text-center focus:outline-none focus:ring-2 focus:ring-green-400">💼 Beyaz Yaka</button>
+                        <button type="button" id="management" class="job-btn py-3 px-2 text-xs rounded border-2 border-purple-300 hover:border-purple-500 hover:bg-purple-50 transition-all duration-200 cursor-pointer font-medium bg-white text-center focus:outline-none focus:ring-2 focus:ring-purple-400">👔 Yönetim</button>
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-2 mb-4">
+                    <input type="text" id="firstName" placeholder="Adınız" class="border-2 border-gray-300 rounded px-3 py-2 text-sm focus:ring-2 focus:ring-purple-500 focus:border-purple-500">
+                    <input type="text" id="lastName" placeholder="Soyadınız" class="border-2 border-gray-300 rounded px-3 py-2 text-sm focus:ring-2 focus:ring-purple-500 focus:border-purple-500">
+                </div>
+                <button id="startSurvey" class="w-full py-3 rounded text-white font-semibold gradient-bg hover:opacity-90 transition-opacity text-sm">
                     📊 Anketi Başlat
                 </button>
             </div>
 
             <!-- Anket Alanı -->
             <div id="surveySection" class="hidden">
-                <div class="flex justify-between items-center mb-4">
-                    <span id="progressText" class="text-gray-600">Anket İlerlemesi 0/25 Yanıtlandı</span>
+                <div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-2">
+                    <span id="progressText" class="text-gray-600 font-medium">Anket İlerlemesi 0/25 Yanıtlandı</span>
                     <span id="timeElapsed" class="text-sm text-gray-500">Süre: 00:00</span>
                 </div>
-                <div class="w-full bg-gray-200 rounded-full h-2 mb-6">
-                    <div id="progressBar" class="bg-purple-600 h-2 rounded-full transition-all duration-300" style="width:0%"></div>
+                <div class="w-full bg-gray-200 rounded-full h-3 mb-8">
+                    <div id="progressBar" class="bg-purple-600 h-3 rounded-full transition-all duration-300" style="width:0%"></div>
                 </div>
                 <div id="questionContainer" class="space-y-6"></div>
-                <button id="submitSurvey" class="hidden w-full mt-6 py-3 rounded-lg text-white font-semibold bg-green-600 hover:bg-green-700 transition-colors">
+                <button id="submitSurvey" class="hidden w-full mt-8 py-4 rounded-xl text-white font-semibold bg-green-600 hover:bg-green-700 transition-colors text-lg">
                     ✅ Anketi Tamamla
                 </button>
             </div>
@@ -166,11 +181,16 @@
                 </div>
 
                 <div class="bg-white border rounded-lg p-6">
-                    <div class="flex justify-between items-center mb-4">
-                        <h3 class="text-lg font-semibold">Anket Sonuçları</h3>
-                        <button onclick="showPDFReport()" class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700">
-                            📄 PDF Göster
-                        </button>
+                    <div class="flex flex-col md:flex-row justify-between items-center mb-4 gap-2">
+                        <h3 class="text-lg font-semibold mb-2 md:mb-0">Anket Sonuçları</h3>
+                        <div class="flex flex-col md:flex-row gap-2 items-center">
+                            <input type="date" id="reportStartDate" class="border rounded px-2 py-1 text-sm" />
+                            <span class="mx-1">-</span>
+                            <input type="date" id="reportEndDate" class="border rounded px-2 py-1 text-sm" />
+                            <button onclick="filterByDateRange()" class="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm">Tarihe Göre Rapor</button>
+                            <button onclick="showPDFReport(true)" class="px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700 text-sm">📄 PDF Göster (Filtreli)</button>
+                            <button onclick="showPDFReport(false)" class="px-3 py-1 bg-gray-600 text-white rounded hover:bg-gray-700 text-sm">📄 PDF Göster (Tümü)</button>
+                        </div>
                     </div>
                     
                     <!-- Grafikler Bölümü -->
@@ -306,6 +326,44 @@
     </div>
 
     <script>
+        // Firebase config
+        const firebaseConfig = {
+            apiKey: "AIzaSyDp2Yh8hamXi6OTfw03MT0S4rp5CjnlAcg",
+            authDomain: "akcaprox-anket.firebaseapp.com",
+            projectId: "akcaprox-anket",
+            storageBucket: "akcaprox-anket.appspot.com",
+            messagingSenderId: "426135179922",
+            appId: "1:426135179922:web:c16b3fd6fa5f3d9224cc4b",
+            measurementId: "G-CD1ET7RGX1"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+
+        // Google Sign-In logic
+        document.addEventListener('DOMContentLoaded', function() {
+            const googleBtn = document.getElementById('googleSignInBtn');
+            const userInfoDiv = document.getElementById('googleUserInfo');
+            if (googleBtn) {
+                googleBtn.addEventListener('click', function() {
+                    const provider = new firebase.auth.GoogleAuthProvider();
+                    auth.signInWithPopup(provider)
+                        .then((result) => {
+                            const user = result.user;
+                            if (user) {
+                                document.getElementById('firstName').value = user.displayName ? user.displayName.split(' ')[0] : '';
+                                document.getElementById('lastName').value = user.displayName ? user.displayName.split(' ').slice(1).join(' ') : '';
+                                userInfoDiv.textContent = `Giriş yapıldı: ${user.displayName} (${user.email})`;
+                                userInfoDiv.classList.remove('hidden');
+                                document.getElementById('firstName').readOnly = true;
+                                document.getElementById('lastName').readOnly = true;
+                            }
+                        })
+                        .catch((error) => {
+                            alert('Google ile giriş başarısız: ' + error.message);
+                        });
+                });
+            }
+        });
         // Global değişkenler
         let currentModule = 'survey';
         let surveyStartTime = null;
@@ -593,27 +651,32 @@
             const firstName = document.getElementById('firstName').value.trim();
             const lastName = document.getElementById('lastName').value.trim();
             const disclaimerAccepted = document.getElementById('acceptDisclaimer').checked;
-            
+
             if (!disclaimerAccepted) {
                 showModal('⚠️ Uyarı', 'Devam etmek için sorumluluk reddi beyanını kabul etmelisiniz.');
                 return;
             }
-            
+
             if (!companyName || !selectedJobType) {
                 showModal('⚠️ Eksik Bilgi', 'Lütfen şirket adını girin ve iş türünüzü seçin.');
                 return;
             }
-            
+
+            if (!firstName || !lastName) {
+                showModal('⚠️ Eksik Bilgi', 'Lütfen adınızı ve soyadınızı girin.');
+                return;
+            }
+
             currentQuestions = questions[selectedJobType];
             currentQuestionIndex = 0;
             answers = [];
             surveyStartTime = new Date();
-            
+
             // Anket bölümünü göster
             document.getElementById('disclaimerSection').classList.add('hidden');
             document.getElementById('companyInfoSection').classList.add('hidden');
             document.getElementById('surveySection').classList.remove('hidden');
-            
+
             startTimer();
             displayCurrentQuestion();
         }
@@ -1007,33 +1070,59 @@
             }
         }
 
+        let filteredSurveys = null;
         function loadCompanyDashboard() {
             if (!loggedInCompany || !systemData.surveyData) return;
-            
             document.getElementById('companyNameDisplay').textContent = loggedInCompany.name;
-            
-            // Şirket anketlerini filtrele
             const companySurveys = systemData.surveyData.responses.filter(s => 
                 s.companyName.toLowerCase() === loggedInCompany.name.toLowerCase()
             );
-            
-            // İstatistikleri güncelle
-            document.getElementById('totalParticipants').textContent = companySurveys.length;
-            
-            if (companySurveys.length > 0) {
-                // Doğru ortalama hesaplama
+            filteredSurveys = null;
+            updateDashboardData(companySurveys);
+        }
+
+        function filterByDateRange() {
+            if (!loggedInCompany || !systemData.surveyData) return;
+            const start = document.getElementById('reportStartDate').value;
+            const end = document.getElementById('reportEndDate').value;
+            const allSurveys = systemData.surveyData.responses.filter(s => 
+                s.companyName.toLowerCase() === loggedInCompany.name.toLowerCase()
+            );
+            if (!start && !end) {
+                filteredSurveys = null;
+                updateDashboardData(allSurveys);
+                return;
+            }
+            const startDate = start ? new Date(start) : null;
+            const endDate = end ? new Date(end) : null;
+            const filtered = allSurveys.filter(s => {
+                const d = new Date(s.submittedAt);
+                if (startDate && d < startDate) return false;
+                if (endDate) {
+                    // Bitiş gününü de dahil et
+                    const endOfDay = new Date(endDate);
+                    endOfDay.setHours(23,59,59,999);
+                    if (d > endOfDay) return false;
+                }
+                return true;
+            });
+            filteredSurveys = filtered;
+            updateDashboardData(filtered);
+        }
+
+        function updateDashboardData(surveys) {
+            document.getElementById('totalParticipants').textContent = surveys.length;
+            if (surveys.length > 0) {
                 let totalScore = 0;
                 let totalAnswers = 0;
-                companySurveys.forEach(s => {
+                surveys.forEach(s => {
                     totalScore += s.totalScore;
                     totalAnswers += s.answers.length;
                 });
                 const avgScore = totalAnswers > 0 ? (totalScore / totalAnswers).toFixed(1) : '0.0';
                 document.getElementById('averageScore').textContent = avgScore;
-                
-                // Memnuniyet yüzdesi hesaplama - 4 ve 5 puan verenlerin oranı
                 let highSatisfactionAnswers = 0;
-                companySurveys.forEach(s => {
+                surveys.forEach(s => {
                     s.answers.forEach(answer => {
                         if (answer.score >= 4) highSatisfactionAnswers++;
                     });
@@ -1045,9 +1134,8 @@
                 document.getElementById('averageScore').textContent = '0.0';
                 document.getElementById('satisfactionRate').textContent = '0%';
             }
-            
-            generateSimpleReport(companySurveys);
-            generateCharts(companySurveys);
+            generateSimpleReport(surveys);
+            generateCharts(surveys);
         }
 
         function generateSimpleReport(surveys) {
@@ -1310,16 +1398,22 @@
             return categoryResults;
         }
 
-        function showPDFReport() {
+        // showPDFReport(true) => filtreli, showPDFReport(false) => tümü
+        function showPDFReport(filtered) {
             if (!loggedInCompany || !systemData.surveyData) return;
-            
-            const companySurveys = systemData.surveyData.responses.filter(s => 
-                s.companyName.toLowerCase() === loggedInCompany.name.toLowerCase()
-            );
-            
-            const pdfContent = generatePDFContent(companySurveys);
-            
-            // Yeni pencerede PDF görünümü aç
+            let surveys;
+            let dateInfo = '';
+            if (filtered && filteredSurveys !== null) {
+                surveys = filteredSurveys;
+                const start = document.getElementById('reportStartDate').value;
+                const end = document.getElementById('reportEndDate').value;
+                if (start && end) dateInfo = ` - ${start} / ${end}`;
+                else if (start) dateInfo = ` - ${start} sonrası`;
+                else if (end) dateInfo = ` - ${end} öncesi`;
+            } else {
+                surveys = systemData.surveyData.responses.filter(s => s.companyName.toLowerCase() === loggedInCompany.name.toLowerCase());
+            }
+            const pdfContent = generatePDFContent(surveys, dateInfo);
             const pdfWindow = window.open('', '_blank', 'width=800,height=600');
             pdfWindow.document.write(pdfContent);
             pdfWindow.document.close();
@@ -1430,72 +1524,18 @@
             `;
         }
 
-        function generatePDFContent(surveys) {
+        function generatePDFContent(surveys, dateInfo = '') {
+            // ...existing code...
             const companyName = loggedInCompany.name;
             const totalParticipants = surveys.length;
-            
-            // Bilimsel Memnuniyet Hesaplama Modeli
-            // Minimum: 50 soru x 1 puan = 50, Maksimum: 50 soru x 5 puan = 250
-            let totalScore = 0;
-            let totalAnswers = 0;
-            const satisfactionByPosition = {};
-            
-            surveys.forEach(s => {
-                totalScore += s.totalScore;
-                totalAnswers += s.answers.length;
-                
-                // Pozisyon bazlı memnuniyet hesaplama
-                const positionScore = s.totalScore;
-                const satisfactionPercent = Math.round(((positionScore - 50) / (250 - 50)) * 100);
-                
-                if (!satisfactionByPosition[s.jobType]) {
-                    satisfactionByPosition[s.jobType] = { total: 0, count: 0, scores: [] };
-                }
-                satisfactionByPosition[s.jobType].total += satisfactionPercent;
-                satisfactionByPosition[s.jobType].count++;
-                satisfactionByPosition[s.jobType].scores.push(satisfactionPercent);
-            });
-            
-            const avgScore = totalAnswers > 0 ? (totalScore / totalAnswers).toFixed(1) : '0.0';
-            
-            // Genel memnuniyet yüzdesi hesaplama
-            const overallSatisfactionPercent = totalParticipants > 0 ? 
-                Math.round(((totalScore - (totalParticipants * 50)) / (totalParticipants * 200)) * 100) : 0;
-            
-            // Memnuniyet oranı - 4 ve 5 puan verenlerin oranı
-            let highSatisfactionCount = 0;
-            surveys.forEach(s => {
-                s.answers.forEach(answer => {
-                    if (answer.score >= 4) highSatisfactionCount++;
-                });
-            });
-            const satisfactionRate = totalAnswers > 0 ? Math.round((highSatisfactionCount / totalAnswers) * 100) : 0;
-            
-            // Kategori Bazlı Analiz - Her pozisyon için 50 soru 5 kategoriye bölünmüş
-            const categoryAnalysis = analyzeCategoryPerformance(surveys);
-            
-            // Pozisyon dağılımı
-            const positionData = {};
-            surveys.forEach(s => {
-                positionData[s.jobType] = (positionData[s.jobType] || 0) + 1;
-            });
-            
-            // Memnuniyet dağılımı - her cevaba göre hesapla
-            const satisfactionCounts = [0, 0, 0]; // Düşük, Orta, Yüksek
-            surveys.forEach(s => {
-                s.answers.forEach(answer => {
-                    if (answer.score <= 2) satisfactionCounts[0]++;
-                    else if (answer.score === 3) satisfactionCounts[1]++;
-                    else satisfactionCounts[2]++;
-                });
-            });
-            
+            // ...existing code...
+            // PDF başlığına tarih aralığı ekle
             return `
                 <!DOCTYPE html>
                 <html>
                 <head>
                     <meta charset="UTF-8">
-                    <title>${companyName} - Anket Raporu</title>
+                    <title>${companyName} - Anket Raporu${dateInfo}</title>
                     <style>
                         body { font-family: Arial, sans-serif; margin: 20px; line-height: 1.6; }
                         .header { text-align: center; border-bottom: 2px solid #333; padding-bottom: 20px; margin-bottom: 30px; }
@@ -1514,166 +1554,10 @@
                 <body onload="window.print()">
                     <div class="header">
                         <h1>📊 ${companyName}</h1>
-                        <h2>İşletme Yönetim Anketi Raporu</h2>
+                        <h2>İşletme Yönetim Anketi Raporu${dateInfo}</h2>
                         <p>Rapor Tarihi: ${new Date().toLocaleDateString('tr-TR')}</p>
                     </div>
-                    
-                    <div class="stats">
-                        <div class="stat-box">
-                            <div class="stat-number">${totalParticipants}</div>
-                            <div>Toplam Katılımcı</div>
-                        </div>
-                        <div class="stat-box">
-                            <div class="stat-number">${avgScore}</div>
-                            <div>Ortalama Puan</div>
-                        </div>
-                        <div class="stat-box">
-                            <div class="stat-number">${satisfactionRate}%</div>
-                            <div>Memnuniyet Oranı</div>
-                        </div>
-                    </div>
-                    
-                    <div class="section">
-                        <h3>👥 Pozisyon Dağılımı</h3>
-                        <table>
-                            <tr><th>Pozisyon</th><th>Katılımcı Sayısı</th><th>Yüzde</th></tr>
-                            ${Object.entries(positionData).map(([pos, count]) => 
-                                `<tr><td>${pos}</td><td>${count}</td><td>${Math.round((count/totalParticipants)*100)}%</td></tr>`
-                            ).join('')}
-                        </table>
-                    </div>
-                    
-                    <div class="section">
-                        <h3>📈 Memnuniyet Seviyeleri</h3>
-                        <table>
-                            <tr><th>Seviye</th><th>Cevap Sayısı</th><th>Yüzde</th></tr>
-                            <tr><td>Düşük (1-2 Puan)</td><td>${satisfactionCounts[0]}</td><td>${totalAnswers > 0 ? Math.round((satisfactionCounts[0]/totalAnswers)*100) : 0}%</td></tr>
-                            <tr><td>Orta (3 Puan)</td><td>${satisfactionCounts[1]}</td><td>${totalAnswers > 0 ? Math.round((satisfactionCounts[1]/totalAnswers)*100) : 0}%</td></tr>
-                            <tr><td>Yüksek (4-5 Puan)</td><td>${satisfactionCounts[2]}</td><td>${totalAnswers > 0 ? Math.round((satisfactionCounts[2]/totalAnswers)*100) : 0}%</td></tr>
-                        </table>
-                    </div>
-                    
-                    <div class="section">
-                        <h3>📋 Özet ve Öneriler</h3>
-                        <p><strong>Genel Değerlendirme:</strong> ${totalParticipants} çalışan anketi tamamlamıştır. Ortalama memnuniyet skoru ${avgScore}/5.0 olarak hesaplanmıştır.</p>
-                        
-                        <p><strong>Bilimsel Memnuniyet Analizi:</strong> Genel memnuniyet seviyesi %${overallSatisfactionPercent} olarak hesaplanmıştır.</p>
-                        
-                        ${overallSatisfactionPercent >= 76 ? 
-                            '<div style="background: #dcfce7; padding: 15px; border-radius: 8px; border-left: 4px solid #16a34a; margin: 15px 0;"><p><strong>🎯 Senaryo 3: Yüksek Memnuniyet (%76-100)</strong></p><p><strong>Durum Değerlendirmesi:</strong> Şirketiniz çalışan bağlılığı ve memnuniyeti konusunda çok başarılı. Bu başarıyı sürdürmek kritik önemde.</p><p><strong>Öneriler:</strong></p><ul><li><strong>Sürekli Takip:</strong> Düzenli "Nabız Anketleri" ile memnuniyet seviyesi takip edilmeli</li><li><strong>Gelişim Alanları:</strong> En yüksek puan alan alanlarda bile çalışanlardan fikir toplanmalı</li><li><strong>Başarıyı Kutlama:</strong> Yüksek memnuniyet için emeği geçenler ödüllendirilmeli</li></ul></div>' :
-                            overallSatisfactionPercent >= 51 ?
-                            '<div style="background: #fef3c7; padding: 15px; border-radius: 8px; border-left: 4px solid #f59e0b; margin: 15px 0;"><p><strong>⚠️ Senaryo 2: Orta Memnuniyet (%51-75)</strong></p><p><strong>Durum Değerlendirmesi:</strong> İyi bir temele sahip ancak "durgunluk sendromu" yaşanıyor. Temel ihtiyaçlar karşılanmış ancak uzun vadeli gelişim konusunda belirsizlikler var.</p><p><strong>Öneriler:</strong></p><ul><li><strong>Gelişim Odaklı Yaklaşım:</strong> Kariyer gelişim programları (mentorluk, eğitim) oluşturulmalı</li><li><strong>Dijital Katılım:</strong> Dijital dönüşümle ilgili çalışanlardan fikir alınmalı</li><li><strong>Yan Hak İyileştirmesi:</strong> Yemek kalitesi, menü çeşitliliği iyileştirilmeli</li></ul></div>' :
-                            '<div style="background: #fee2e2; padding: 15px; border-radius: 8px; border-left: 4px solid #dc2626; margin: 15px 0;"><p><strong>🚨 Senaryo 1: Düşük Memnuniyet (%0-50)</strong></p><p><strong>Durum Değerlendirmesi:</strong> Şirket temelden sarsılmış durumda. Tüm çalışan gruplarında ciddi sorunlar var ve acil müdahale gerekli.</p><p><strong>Öneriler:</strong></p><ul><li><strong>Acil Eylem Planı:</strong> Maaş ve sosyal haklar gibi temel konular gözden geçirilmeli</li><li><strong>İyileştirme Çalışmaları:</strong> Çalışma koşulları (havalandırma, aydınlatma, iş güvenliği) iyileştirilmeli</li><li><strong>İletişim:</strong> Yönetim şeffaf toplantılarla vizyon ve adımları paylaşmalı</li></ul></div>'
-                        }
-                        
-                        <div style="background: #f3f4f6; padding: 15px; border-radius: 8px; margin: 15px 0;">
-                            <p><strong>📊 Pozisyon Bazlı Analiz:</strong></p>
-                            ${Object.entries(satisfactionByPosition).map(([position, data]) => {
-                                const avgPercent = Math.round(data.total / data.count);
-                                return `<p><strong>${position}:</strong> %${avgPercent} memnuniyet (${data.count} katılımcı)</p>`;
-                            }).join('')}
-                            
-                            ${Object.keys(satisfactionByPosition).length > 1 ? 
-                                (() => {
-                                    const positions = Object.entries(satisfactionByPosition);
-                                    const maxDiff = Math.max(...positions.map(([,data]) => Math.round(data.total / data.count))) - 
-                                                   Math.min(...positions.map(([,data]) => Math.round(data.total / data.count)));
-                                    
-                                    if (maxDiff > 30) {
-                                        return '<div style="background: #fef2f2; padding: 10px; border-radius: 6px; margin-top: 10px;"><p><strong>⚠️ Senaryo 4: Gruplar Arası Ayrışma Tespit Edildi</strong></p><p>Pozisyonlar arasında %' + maxDiff + ' fark var. Bu ciddi bir kültür çatışması işareti olabilir.</p><p><strong>Öneriler:</strong> Düşük puan alan gruplara öncelik verilmeli, gruplar arası iletişim köprüleri kurulmalı.</p></div>';
-                                    }
-                                    return '';
-                                })() : ''
-                            }
-                        </div>
-                        
-                        <div style="background: #e0f2fe; padding: 15px; border-radius: 8px; margin: 15px 0; border-left: 4px solid #0277bd;">
-                            <h4 style="color: #01579b; margin-bottom: 10px; font-size: 16px;"><strong>📋 Kategori Bazlı Detay Analiz</strong></h4>
-                            <table style="width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 13px;">
-                                <thead>
-                                    <tr style="background-color: #b3e5fc;">
-                                        <th style="border: 1px solid #0277bd; padding: 8px; text-align: left; color: #01579b;">Kategori</th>
-                                        <th style="border: 1px solid #0277bd; padding: 8px; text-align: center; color: #01579b;">Puan</th>
-                                        <th style="border: 1px solid #0277bd; padding: 8px; text-align: center; color: #01579b;">Durum</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    ${Object.entries(categoryAnalysis).map(([key, category]) => {
-                                        const statusColor = category.status === 'Yüksek' ? '#2e7d32' : 
-                                                          category.status === 'Orta' ? '#f57c00' : '#d32f2f';
-                                        const bgColor = category.status === 'Yüksek' ? '#e8f5e8' : 
-                                                       category.status === 'Orta' ? '#fff3e0' : '#ffebee';
-                                        return `
-                                            <tr style="background-color: ${bgColor};">
-                                                <td style="border: 1px solid #0277bd; padding: 8px; font-weight: 500;">${category.name}</td>
-                                                <td style="border: 1px solid #0277bd; padding: 8px; text-align: center; font-weight: bold; color: ${statusColor};">${category.score}/5.0</td>
-                                                <td style="border: 1px solid #0277bd; padding: 8px; text-align: center; font-weight: bold; color: ${statusColor};">${category.status}</td>
-                                            </tr>
-                                            <tr style="background-color: ${bgColor};">
-                                                <td colspan="3" style="border: 1px solid #0277bd; padding: 8px; font-size: 12px; color: #424242; line-height: 1.4;">
-                                                    <strong>Yorum:</strong> ${category.comment}
-                                                </td>
-                                            </tr>
-                                        `;
-                                    }).join('')}
-                                </tbody>
-                            </table>
-                        </div>
-                        <!-- İşletme için özel strateji ve aksiyon planı bölümü -->
-                        <div style="background: #fff; border-radius: 8px; margin: 20px 0; padding: 24px 18px; border-left: 5px solid #6366f1; box-shadow: 0 2px 8px #e0e7ff;">
-                            <h3 style="font-size: 1.4em; font-weight: bold; color: #3730a3; margin-bottom: 12px;">2. Stratejik Öneriler</h3>
-                            <p style="color: #374151; margin-bottom: 12px;">Anket sonuçları, şirket genelinde güçlü ve zayıf alanları net bir şekilde ortaya koymaktadır. Özellikle <b>Maaş ve Yan Haklar</b> ile <b>Kariyer Fırsatları</b> kategorilerindeki düşük puanlar, çalışan memnuniyetsizliğinin temel kaynağına işaret etmektedir. Öte yandan, <b>Dijital Dönüşüm</b> ve <b>Çalışma Ortamı</b> gibi alanlardaki yüksek puanlar, kurumun doğru yatırımlar yaptığını ve bu başarıları bir marka değeri olarak kullanabileceğini göstermektedir.</p>
-                            <ul style="margin-left: 18px; color: #374151;">
-                                <li><b style="color:#dc2626;">Acil Müdahale Gerektiren Alanlar:</b> Düşük puan alan kategorilerde (Maaş ve Yan Haklar, Kariyer Fırsatları) hızlı ve şeffaf iyileştirme adımları atılmalıdır. Bu durum, çalışan devir hızını artırma ve yetenekli personeli kaybetme riskini taşımaktadır.</li>
-                                <li><b style="color:#16a34a;">Güçlü Yönlerin Korunması:</b> Yüksek puan alan kategorilerdeki başarılar (Dijital Dönüşüm, Çalışma Ortamı) sürdürülmelidir. Bu alanlardaki pozitif algı, yeni yetenekleri çekmek için kullanılabilir ve iç motivasyonu pekiştirir.</li>
-                                <li><b style="color:#f59e0b;">İletişimin Güçlendirilmesi:</b> Yönetim ve İletişim kategorisindeki orta düzey puanlar, daha proaktif bir yaklaşım gerektirmektedir. Düzenli "nabız anketleri" ve açık iletişim toplantıları ile çalışanların kendilerini daha fazla dinlenmiş hissetmeleri sağlanmalıdır.</li>
-                            </ul>
-                            <h3 style="font-size: 1.4em; font-weight: bold; color: #3730a3; margin: 24px 0 12px 0;">3. Aksiyon Planı</h3>
-                            <div style="display: flex; flex-direction: column; gap: 16px;">
-                                <div style="background: #eef2ff; border-left: 4px solid #6366f1; border-radius: 6px; padding: 14px 18px;">
-                                    <b style="color:#3730a3;">1. Ücret ve Kariyer Gelişim Planı Hazırlığı</b>
-                                    <p style="margin: 6px 0 0 0; color: #374151;">İnsan Kaynakları ve yönetim ekibi, piyasa araştırması yaparak rekabetçi bir maaş düzenlemesi ve her çalışan için net bir kariyer gelişim yolu belirleyecektir. Bu plan, önümüzdeki 3 ay içinde çalışanlarla paylaşılacaktır.</p>
-                                </div>
-                                <div style="background: #eef2ff; border-left: 4px solid #6366f1; border-radius: 6px; padding: 14px 18px;">
-                                    <b style="color:#3730a3;">2. Nabız Anketi Uygulaması</b>
-                                    <p style="margin: 6px 0 0 0; color: #374151;">İlk anketin üzerinden 6 ay geçtikten sonra daha kısa ve odaklanmış bir "nabız anketi" uygulanacaktır. Bu anket, yapılan iyileştirmelerin çalışanlar üzerindeki etkisini ölçecek ve anlık geri bildirim sağlayacaktır.</p>
-                                </div>
-                                <div style="background: #eef2ff; border-left: 4px solid #6366f1; border-radius: 6px; padding: 14px 18px;">
-                                    <b style="color:#3730a3;">3. Liderlik Gelişim Programı</b>
-                                    <p style="margin: 6px 0 0 0; color: #374151;">Yönetim ve İletişim puanlarını artırmak için tüm yöneticilere liderlik, geri bildirim verme ve iletişim becerileri üzerine kapsamlı bir eğitim programı başlatılacaktır.</p>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div style="background: #f1f8e9; padding: 15px; border-radius: 8px; margin: 15px 0; border-left: 4px solid #689f38;">
-                            <h4 style="color: #33691e; margin-bottom: 10px;"><strong>🎯 Genel Değerlendirme: "Zıtlıklar Dengesi"</strong></h4>
-                            <p style="font-size: 14px; line-height: 1.5; color: #424242;">
-                                Bu anket sonuçları, şirketinizin bir <strong>"Zıtlıklar Dengesi"</strong> içinde olduğunu gösteriyor. 
-                                Çalışma ortamı ve dijital dönüşüm gibi modern ve ileriye dönük konularda oldukça başarılısınız. 
-                                Bu, şirketinizin geleceğe yatırım yaptığının ve yeniliklere açık olduğunun somut bir kanıtıdır.
-                            </p>
-                            <p style="font-size: 14px; line-height: 1.5; color: #424242; margin-top: 10px;">
-                                Ancak, temel ve günlük yaşamı etkileyen alanlardaki düşük puanlar ciddi bir alarm işaretidir. 
-                                Bu durum, çalışanların "iyi bir yer ama temel beklentilerim karşılanmıyor" şeklinde düşünmesine neden olabilir. 
-                                Bu alandaki memnuniyetsizlik, diğer olumlu faktörleri gölgeleyebilir ve çalışan devir oranını artırabilir.
-                            </p>
-                        </div>
-                        
-                        <p><strong>Stratejik Öneriler ve Aksiyon Planı:</strong></p>
-                        <ul>
-                            <li><strong>Veri Odaklı Analiz:</strong> Düşük performans gösteren kategorilerde kök neden analizi yapılması ve SWOT analizi ile güçlü/zayıf yönlerin belirlenmesi</li>
-                            <li><strong>Çalışan Deneyimi Optimizasyonu:</strong> Employee Journey Mapping ile kritik dokunma noktalarının iyileştirilmesi ve personalize çözümlerin geliştirilmesi</li>
-                            <li><strong>Sürekli İyileştirme Döngüsü:</strong> Quarterly anket tekrarları, benchmark analizi ve KPI takibi ile sürekli gelişim sağlanması</li>
-                            <li><strong>Best Practice Transferi:</strong> Yüksek performans gösteren departmanların başarı faktörlerinin organizasyon geneline yaygınlaştırılması</li>
-                            <li><strong>Liderlik Gelişimi:</strong> Yönetici kadrosuna yönelik coaching programları ve çalışan bağlılığı eğitimlerinin planlanması</li>
-                            <li><strong>İnovasyon ve Dijitalleşme:</strong> Çalışan önerilerinin değerlendirildiği inovasyon platformları ve dijital dönüşüm projelerinin hayata geçirilmesi</li>
-                        </ul>
-                    </div>
-                    
-                    <div class="footer">
-                        <p>Bu rapor Akça Pro X - Kurumsal Anket ve Raporlama Sistemi tarafından oluşturulmuştur.</p>
-                        <p>Rapor ID: ${Date.now()} | Oluşturulma: ${new Date().toLocaleString('tr-TR')}</p>
-                    </div>
+                    <!-- ...existing code... -->
                 </body>
                 </html>
             `;
