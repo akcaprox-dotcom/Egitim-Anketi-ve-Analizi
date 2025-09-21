@@ -220,6 +220,30 @@
                             </div>
                         </div>
                     </div>
+                    <!-- SWOT Analizi Tablosu (Rapor Ekranı) -->
+                    <div class="bg-white border rounded-lg p-4 mb-4">
+                        <h4 class="font-semibold text-gray-800 mb-4 text-lg">SWOT Analizi</h4>
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full text-sm text-center border border-gray-300">
+                                <thead>
+                                    <tr>
+                                        <th class="bg-green-100 border border-gray-300 p-2">Güçlü Yönler</th>
+                                        <th class="bg-red-100 border border-gray-300 p-2">Zayıf Yönler</th>
+                                        <th class="bg-blue-100 border border-gray-300 p-2">Fırsatlar</th>
+                                        <th class="bg-yellow-100 border border-gray-300 p-2">Tehditler</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td class="border border-gray-300 p-2 align-top">• Yüksek çalışan memnuniyeti<br>• Güçlü ekip ruhu<br>• Modern altyapı</td>
+                                        <td class="border border-gray-300 p-2 align-top">• Yoğun dönemlerde iletişim eksikliği<br>• Kısıtlı sosyal imkanlar<br>• Dijitalleşme eksikliği</td>
+                                        <td class="border border-gray-300 p-2 align-top">• Dijitalleşme yatırımları<br>• Yeni pazar fırsatları<br>• Kamu destekleri</td>
+                                        <td class="border border-gray-300 p-2 align-top">• Artan rekabet<br>• Ekonomik dalgalanmalar<br>• Personel değişimi</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
                     
                     <!-- Katılımcı Detayları Bölümü -->
                     <div class="bg-white border rounded-lg p-4 mb-4">
@@ -297,6 +321,9 @@
 
                 <div class="bg-white border rounded-lg p-6">
                     <h3 class="text-lg font-semibold mb-4">Şirket Listesi ve Yönetimi</h3>
+                    <div class="mb-3 flex items-center">
+                        <input type="text" id="companySearchInput" placeholder="Şirket adı ara..." class="border rounded px-3 py-2 text-sm w-full max-w-xs" oninput="filterCompanyList()">
+                    </div>
                     <div class="overflow-x-auto">
                         <table class="w-full table-auto">
                             <thead>
@@ -928,7 +955,8 @@
                     name: companyName,
                     password: newPassword,
                     createdAt: new Date().toISOString(),
-                    totalResponses: 0
+                    totalResponses: 0,
+                    status: 'aktif' // yeni şirketler varsayılan olarak aktif
                 };
                 
                 console.log('Yeni şirket oluşturuldu:', systemData.surveyData.companies[companyKey]);
@@ -1090,8 +1118,12 @@
                         company.name.toLowerCase() === companyName.toLowerCase() && 
                         company.password === password
                     );
-                
                 if (companyEntry) {
+                    // Pasif şirket kontrolü
+                    if (companyEntry[1].status === 'pasif') {
+                        showModal('⛔ Askıya Alındı', 'Bu şirket askıya alınmış/dondurulmuş. Lütfen yöneticinizle iletişime geçin.');
+                        return;
+                    }
                     loggedInCompany = {
                         key: companyEntry[0],
                         ...companyEntry[1]
@@ -1103,7 +1135,11 @@
                     showModal('❌ Giriş Hatası', 'Şirket adı veya şifre hatalı. Lütfen yöneticinizden doğru bilgileri alın.');
                 }
             } catch (error) {
-                showModal('❌ Hata', 'Giriş sırasında bir hata oluştu. Lütfen tekrar deneyin.');
+                // Eğer modal zaten açıksa (ör: pasif şirket uyarısı), tekrar hata modalı gösterme
+                const modal = document.getElementById('modal');
+                if (!modal.classList.contains('show')) {
+                    showModal('❌ Hata', 'Giriş sırasında bir hata oluştu. Lütfen tekrar deneyin.');
+                }
                 console.error('Giriş hatası:', error);
             }
         }
@@ -1279,39 +1315,70 @@
 
         function loadCompanyList() {
             const tbody = document.getElementById('companyList');
-            
             if (!systemData.surveyData || !systemData.surveyData.companies) {
                 tbody.innerHTML = '<tr><td colspan="5" class="text-center py-4 text-gray-500">Henüz şirket kaydı bulunmuyor.</td></tr>';
                 return;
             }
-            
             const companies = systemData.surveyData.companies;
             const responses = systemData.surveyData.responses || [];
-            
-            tbody.innerHTML = Object.entries(companies).map(([companyKey, company]) => {
-                const companySurveys = responses.filter(s => 
-                    s.companyName.toLowerCase() === company.name.toLowerCase()
-                );
-                
-                return `
-                    <tr class="border-b hover:bg-gray-50">
-                        <td class="px-4 py-2 font-medium">${company.name}</td>
-                        <td class="px-4 py-2">
-                            <code class="bg-gray-100 px-2 py-1 rounded text-sm">${company.password}</code>
-                        </td>
-                        <td class="px-4 py-2">${companySurveys.length}</td>
-                        <td class="px-4 py-2">
-                            <span class="px-2 py-1 rounded-full text-xs bg-green-100 text-green-800">
-                                🟢 Aktif
-                            </span>
-                        </td>
-                        <td class="px-4 py-2">
-                            <button onclick="showAdminCompanyReport('${company.name}')" class="text-green-600 hover:text-green-800 mr-2">📊 Rapor</button>
-                            <button onclick="resetCompanyPassword('${companyKey}')" class="text-orange-600 hover:text-orange-800">🔄 Şifre</button>
-                        </td>
-                    </tr>
-                `;
-            }).join('');
+            // Alfabetik sıralama
+            const sortedEntries = Object.entries(companies).sort((a, b) => {
+                const nameA = a[1].name.toLowerCase();
+                const nameB = b[1].name.toLowerCase();
+                return nameA.localeCompare(nameB, 'tr');
+            });
+            // Arama filtresi
+            const searchValue = (document.getElementById('companySearchInput')?.value || '').toLowerCase();
+            const filteredEntries = sortedEntries.filter(([_, company]) =>
+                company.name.toLowerCase().includes(searchValue)
+            );
+            tbody.innerHTML = filteredEntries.length === 0
+                ? '<tr><td colspan="5" class="text-center py-4 text-gray-500">Sonuç bulunamadı.</td></tr>'
+                : filteredEntries.map(([companyKey, company]) => {
+                    const companySurveys = responses.filter(s => 
+                        s.companyName.toLowerCase() === company.name.toLowerCase()
+                    );
+                    const isActive = !company.status || company.status === 'aktif';
+                    return `
+                        <tr class="border-b hover:bg-gray-50">
+                            <td class="px-4 py-2 font-medium">${company.name}</td>
+                            <td class="px-4 py-2">
+                                <code class="bg-gray-100 px-2 py-1 rounded text-sm">${company.password}</code>
+                            </td>
+                            <td class="px-4 py-2">${companySurveys.length}</td>
+                            <td class="px-4 py-2">
+                                <span class="px-2 py-1 rounded-full text-xs ${isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}">
+                                    ${isActive ? '🟢 Aktif' : '⛔ Pasif'}
+                                </span>
+                            </td>
+                            <td class="px-4 py-2">
+                                <button onclick="showAdminCompanyReport('${company.name}')" class="text-green-600 hover:text-green-800 mr-2">📊 Rapor</button>
+                                <button onclick="resetCompanyPassword('${companyKey}')" class="text-orange-600 hover:text-orange-800 mr-2">🔄 Şifre</button>
+                                <button onclick="toggleCompanyStatus('${companyKey}')" class="text-blue-600 hover:text-blue-800">${isActive ? 'Askıya Al' : 'Aktif Et'}</button>
+                            </td>
+                        </tr>
+                    `;
+                }).join('');
+        }
+
+        // Şirketi askıya al/aktifleştir fonksiyonu
+        async function toggleCompanyStatus(companyKey) {
+            if (!systemData.surveyData || !systemData.surveyData.companies[companyKey]) return;
+            const company = systemData.surveyData.companies[companyKey];
+            company.status = (!company.status || company.status === 'aktif') ? 'pasif' : 'aktif';
+            const saveResult = await saveToJSONBin(systemData.surveyData);
+            if (saveResult.success) {
+                loadCompanyList();
+                showModal('Durum Güncellendi', `${company.name} şirketi artık <b>${company.status === 'aktif' ? 'Aktif' : 'Pasif (Askıda)'}</b> durumunda.`);
+            } else {
+                showModal('❌ Hata', `Durum güncellenemedi: ${saveResult.error}`);
+            }
+
+        }
+
+        // Arama kutusu için canlı filtreleme fonksiyonu
+        function filterCompanyList() {
+            loadCompanyList();
         }
 
         async function resetCompanyPassword(companyKey) {
@@ -1643,6 +1710,24 @@
                 </div>
                 ${dateInfo ? `<div class='date-info'>📅 Filtrelenmiş Rapor${dateInfo}</div>` : ''}
                 <div class='summary-grid'>
+                <!-- SWOT Analizi Tablosu (PDF) -->
+                <div class='section'>
+                    <div class='section-title'>SWOT Analizi</div>
+                    <table style="width:100%;border-collapse:collapse;margin:24px 0;">
+                        <tr>
+                            <th style="background:#d1fae5;border:1px solid #a3a3a3;padding:10px;">Güçlü Yönler</th>
+                            <th style="background:#fee2e2;border:1px solid #a3a3a3;padding:10px;">Zayıf Yönler</th>
+                            <th style="background:#dbeafe;border:1px solid #a3a3a3;padding:10px;">Fırsatlar</th>
+                            <th style="background:#fef9c3;border:1px solid #a3a3a3;padding:10px;">Tehditler</th>
+                        </tr>
+                        <tr>
+                            <td style="border:1px solid #a3a3a3;padding:10px;vertical-align:top;">• Yüksek çalışan memnuniyeti<br>• Güçlü ekip ruhu<br>• Modern altyapı</td>
+                            <td style="border:1px solid #a3a3a3;padding:10px;vertical-align:top;">• Yoğun dönemlerde iletişim eksikliği<br>• Kısıtlı sosyal imkanlar<br>• Dijitalleşme eksikliği</td>
+                            <td style="border:1px solid #a3a3a3;padding:10px;vertical-align:top;">• Dijitalleşme yatırımları<br>• Yeni pazar fırsatları<br>• Kamu destekleri</td>
+                            <td style="border:1px solid #a3a3a3;padding:10px;vertical-align:top;">• Artan rekabet<br>• Ekonomik dalgalanmalar<br>• Personel değişimi</td>
+                        </tr>
+                    </table>
+                </div>
                     <div class='summary-box'><div style='font-size:1.1rem;'>${totalParticipants}</div>Toplam Katılımcı</div>
                     <div class='summary-box'><div style='font-size:1.1rem;'>${avgScore}</div>Ortalama Puan</div>
                     <div class='summary-box'><div style='font-size:1.1rem;'>${satisfactionPercent}%</div>Genel Memnuniyet</div>
