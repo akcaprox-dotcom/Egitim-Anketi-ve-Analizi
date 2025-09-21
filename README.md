@@ -352,12 +352,14 @@
                             const user = result.user;
                             if (user) {
                                 googleUser = user;
+                                // Prefill name fields
                                 document.getElementById('firstName').value = user.displayName ? user.displayName.split(' ')[0] : '';
                                 document.getElementById('lastName').value = user.displayName ? user.displayName.split(' ').slice(1).join(' ') : '';
                                 userInfoDiv.textContent = `Giriş yapıldı: ${user.displayName} (${user.email})`;
                                 userInfoDiv.classList.remove('hidden');
-                                document.getElementById('firstName').readOnly = true;
-                                document.getElementById('lastName').readOnly = true;
+                                // Make name fields editable
+                                document.getElementById('firstName').readOnly = false;
+                                document.getElementById('lastName').readOnly = false;
                             }
                         })
                         .catch((error) => {
@@ -666,6 +668,22 @@
             const firstName = document.getElementById('firstName').value.trim();
             const lastName = document.getElementById('lastName').value.trim();
             const disclaimerAccepted = document.getElementById('acceptDisclaimer').checked;
+
+            // Google Sign-In enforcement
+            if (!googleUser) {
+                showModal(
+                    '🔒 Giriş Gerekli',
+                    `<div class="text-2xl font-extrabold text-red-700 mb-4">Google ile Giriş Yapmalısınız</div>
+                    <div class="text-base text-gray-800 mb-2">Ankete başlamadan önce kimliğinizi doğrulamanız gerekmektedir.</div>
+                    <ul class="list-disc pl-6 text-base text-gray-700 mb-4">
+                        <li>Yukarıdaki <b>Google ile Giriş Yap</b> butonunu kullanarak hesabınızla oturum açın.</li>
+                        <li>Giriş yaptıktan sonra ad ve soyad alanlarınız otomatik doldurulacak ve düzenlenebilir olacaktır.</li>
+                        <li>Gizliliğiniz korunur, bilgileriniz üçüncü kişilerle paylaşılmaz.</li>
+                    </ul>
+                    <div class="text-sm text-gray-500">Herhangi bir sorun yaşarsanız lütfen yöneticinizle iletişime geçin.</div>`
+                );
+                return;
+            }
 
             if (!disclaimerAccepted) {
                 showModal('⚠️ Uyarı', 'Devam etmek için sorumluluk reddi beyanını kabul etmelisiniz.');
