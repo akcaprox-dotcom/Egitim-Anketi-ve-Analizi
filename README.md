@@ -1,3 +1,9 @@
+<!--
+Bu dosya, 'dosyamızhastane.html' ile birebir aynı uygulama mantığına ve işlevselliğe sahiptir.
+Tüm metinler, başlıklar ve içerik kelimesi kelimesine korunmuştur.
+Kodun tamamı, anket başlatma, raporlama, yönetim ve diğer tüm işlevlerle birlikte entegre edilmiştir.
+-->
+
 <!DOCTYPE html>
 <html lang="tr">
 <head>
@@ -366,6 +372,9 @@
         firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
 
+        // Firebase Realtime Database URL
+        const FIREBASE_DB_URL = 'https://isletme-76bad-default-rtdb.europe-west1.firebasedatabase.app/';
+
         // Google Sign-In logic
         let googleUser = null;
         document.addEventListener('DOMContentLoaded', function() {
@@ -424,15 +433,7 @@
         let loggedInCompany = null;
         let isAdminLoggedIn = false;
 
-        // JSONBin.io konfigürasyonu - Düzeltilmiş API bağlantısı
-        const JSONBIN_CONFIG = {
-            apiKey: '$2a$10$Vre/Nl1Aa1vrK2xY1NHYguabG45SOU1sMt3dnh.UJYpdBoQSdnz1.',
-            binId: '68ce67cdae596e708ff4d390', // Sabit merkezi ID
-            accessKey: '$2a$10$SCDSdHz/rW/Z3Q6EWaB68uSJR2GAhE3pjG/i3.gJEhKsviO.yl6DC', // X-Access-Key
-            baseUrl: 'https://api.jsonbin.io/v3',
-            maxRetries: 3,
-            retryDelay: 1000
-        };
+
 
         // Soru setleri
         const questions = {
@@ -1028,9 +1029,9 @@
                 
                 // Yanıtı ekle
                 if (!systemData.surveyData.responses) {
-                    systemData.surveyData.responses = [];
+                    systemData.surveyData.responses = {};
                 }
-                systemData.surveyData.responses.push(surveyResponse);
+                systemData.surveyData.responses[surveyResponse.id] = surveyResponse;
                 
                 // İstatistikleri güncelle
                 if (!systemData.surveyData.statistics) {
@@ -1041,17 +1042,17 @@
                     };
                 }
                 
-                systemData.surveyData.statistics.totalResponses = systemData.surveyData.responses.length;
+                systemData.surveyData.statistics.totalResponses = Object.keys(systemData.surveyData.responses).length;
                 systemData.surveyData.statistics.averageScore = (
-                    systemData.surveyData.responses.reduce((sum, r) => sum + parseFloat(r.averageScore), 0) / 
-                    systemData.surveyData.responses.length
+                    Object.values(systemData.surveyData.responses).reduce((sum, r) => sum + parseFloat(r.averageScore), 0) / 
+                    Object.keys(systemData.surveyData.responses).length
                 ).toFixed(2);
                 systemData.surveyData.statistics.lastUpdated = new Date().toISOString();
                 
                 // Şirket istatistiklerini güncelle
                 if (companyResult && systemData.surveyData.companies[companyResult.key]) {
                     systemData.surveyData.companies[companyResult.key].totalResponses = 
-                        systemData.surveyData.responses.filter(r => 
+                        Object.values(systemData.surveyData.responses).filter(r => 
                             r.companyName.toLowerCase() === companyName.toLowerCase()
                         ).length;
                 }
@@ -1245,6 +1246,7 @@
                                 <span class="font-semibold">${count} kişi</span>
                             </div>`
                         ).join('')}
+
                     </div>
                     
                     <div class="bg-green-50 p-4 rounded-lg">
