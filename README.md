@@ -951,9 +951,9 @@
             }
             
             try {
-                if (!systemData.surveyData) {
-                    systemData.surveyData = await loadFromJSONBin();
-                }
+                // if (!systemData.surveyData) {
+                //     systemData.surveyData = await loadFromJSONBin();
+                // }
                 
                 // Şirket bilgilerini kontrol et
                 const companyEntry = Object.entries(systemData.surveyData.companies || {})
@@ -1955,14 +1955,6 @@
             }).join('');
         }
 
-        function loadDemoData() {
-            console.log('Demo veri yükleniyor...');
-            loadFromJSONBin().then(data => {
-                console.log('Demo veri yüklendi:', data);
-            }).catch(error => {
-                console.error('Demo veri yükleme hatası:', error);
-            });
-        }
     </script>
 </body>
 </html>
