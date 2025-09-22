@@ -10,6 +10,89 @@
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <!-- Firebase Auth -->
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .active-tab {
+            border: 2px solid #6366f1;
+            background-color: #eef2ff;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+        }
+        .modal.show {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        @media print {
+            .no-print { display: none !important; }
+            body { background: white !important; }
+        }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen">
+    <!-- Ana Navigasyon -->
+    <nav class="gradient-bg text-white p-3 shadow-lg sticky top-0 z-50">
+        <div class="max-w-5xl mx-auto flex flex-col md:flex-row justify-between items-center gap-2 md:gap-0">
+            <div class="flex items-center gap-2">
+                <!-- Gizli yönetici erişimi -->
+                <div onclick="showModule('admin')" class="w-4 h-4 cursor-pointer opacity-15 hover:opacity-50 transition-opacity" title="">
+                    <div class="w-4 h-4 rounded-full border border-white/30 flex items-center justify-center animate-spin" style="animation-duration: 12s;">
+                        <div class="w-1 h-1 bg-white/40 rounded-full"></div>
+                    </div>
+                </div>
+                <div>
+                    <h1 class="text-xl font-bold">Akça Pro X</h1>
+                    <p class="text-sm opacity-90">Kurumsal Anket ve Raporlama Sistemi</p>
+                </div>
+            </div>
+            <div class="flex gap-4">
+                <button onclick="showModule('survey')" class="px-4 py-2 bg-white/20 rounded-lg hover:bg-white/30 transition-colors">📊 Anket</button>
+                <button onclick="showModule('company')" class="px-4 py-2 bg-white/20 rounded-lg hover:bg-white/30 transition-colors">🏢 Şirket Portalı</button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Anket Modülü -->
+    <div id="surveyModule" class="max-w-5xl mx-auto p-2 md:p-4">
+        <div class="bg-white shadow-xl rounded-2xl max-w-2xl mx-auto p-4 md:p-8">
+            <div class="text-center mb-6">
+                <h2 class="text-2xl md:text-3xl font-extrabold text-gray-800 mb-1 tracking-tight">İşletme Yönetim Anketi</h2>
+                <p class="text-gray-600 mb-2 text-base md:text-lg">Görüşleriniz bizim için değerli</p>
+                <span class="bg-green-100 text-green-800 text-xs font-semibold px-2 py-1 rounded-full">v3.1.0 - Firebase Entegre</span>
+            </div>
+
+            <!-- Sorumluluk Reddi -->
+            <div id="disclaimerSection" class="mb-4">
+                <div class="bg-yellow-50 border border-yellow-300 rounded-lg p-3 mb-3">
+                    <h3 class="font-semibold text-yellow-800 mb-2 text-sm">⚠️ Veri Koruma Beyanı</h3>
+                    <div class="text-xs text-yellow-700 space-y-1">
+                        <p>• Verileriniz JSONBin.io güvenli sisteminde saklanır ve üçüncü taraflarla paylaşılmaz.</p>
+                        <p>• Anket sonuçları sadece şirket yetkilileri tarafından görüntülenebilir.</p>
+                        <p>• Sistem güvenliği JSONBin.io sorumluluğundadır.</p>
+                        <p>• Hack, veri ihlali vb. güvenlik olaylarından kaynaklanan bilgi erişimlerinin sorumluluğu Akça Pro X'e ait değildir.</p>
+                    </div>
+                </div>
+                <label class="flex items-center space-x-2 cursor-pointer">
+                    <input type="checkbox" id="acceptDisclaimer" class="w-4 h-4 text-purple-600">
+                    <span class="text-xs font-medium">Veri koruma beyanını kabul ediyorum</span>
+                </label>
+            </div>
+
+            <!-- Şirket Bilgileri -->
+            <div id="companyInfoSection" class="">
                 <h3 class="text-base font-semibold text-gray-700 mb-3">Şirket ve Kişisel Bilgiler</h3>
                 <!-- Google ile Giriş Yap butonu -->
                 <div class="mb-3 flex flex-col items-center">
@@ -105,8 +188,8 @@
                             <span class="mx-1">-</span>
                             <input type="date" id="reportEndDate" class="border rounded px-2 py-1 text-sm" />
                             <button onclick="filterByDateRange()" class="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm">Tarihe Göre Rapor</button>
-                            <button onclick="showPDFReport(true)" class="px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700 text-sm">📄 PDF Göster (Filtreli)</button>
-                            <button onclick="showPDFReport(false)" class="px-3 py-1 bg-gray-600 text-white rounded hover:bg-gray-700 text-sm">📄 PDF Göster (Tümü)</button>
+                            <button onclick="showPDFReport(true)" class="px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700 text-sm" style="display:none">📄 PDF Göster (Filtreli)</button>
+                            <button onclick="showPDFReport(false)" class="px-3 py-1 bg-gray-600 text-white rounded hover:bg-gray-700 text-sm" style="display:none">📄 PDF Göster (Tümü)</button>
                         </div>
                     </div>
                     
@@ -135,30 +218,6 @@
                             <div style="height: 150px; position: relative;">
                                 <canvas id="trendChart"></canvas>
                             </div>
-                        </div>
-                    </div>
-                    <!-- SWOT Analizi Tablosu (Rapor Ekranı) -->
-                    <div class="bg-white border rounded-lg p-4 mb-4">
-                        <h4 class="font-semibold text-gray-800 mb-4 text-lg">SWOT Analizi</h4>
-                        <div class="overflow-x-auto">
-                            <table class="min-w-full text-sm text-center border border-gray-300">
-                                <thead>
-                                    <tr>
-                                        <th class="bg-green-100 border border-gray-300 p-2">Güçlü Yönler</th>
-                                        <th class="bg-red-100 border border-gray-300 p-2">Zayıf Yönler</th>
-                                        <th class="bg-blue-100 border border-gray-300 p-2">Fırsatlar</th>
-                                        <th class="bg-yellow-100 border border-gray-300 p-2">Tehditler</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr>
-                                        <td class="border border-gray-300 p-2 align-top">• Yüksek çalışan memnuniyeti<br>• Güçlü ekip ruhu<br>• Modern altyapı</td>
-                                        <td class="border border-gray-300 p-2 align-top">• Yoğun dönemlerde iletişim eksikliği<br>• Kısıtlı sosyal imkanlar<br>• Dijitalleşme eksikliği</td>
-                                        <td class="border border-gray-300 p-2 align-top">• Dijitalleşme yatırımları<br>• Yeni pazar fırsatları<br>• Kamu destekleri</td>
-                                        <td class="border border-gray-300 p-2 align-top">• Artan rekabet<br>• Ekonomik dalgalanmalar<br>• Personel değişimi</td>
-                                    </tr>
-                                </tbody>
-                            </table>
                         </div>
                     </div>
                     
@@ -278,13 +337,11 @@
             storageBucket: "akcaprox-anket.appspot.com",
             messagingSenderId: "426135179922",
             appId: "1:426135179922:web:c16b3fd6fa5f3d9224cc4b",
-            measurementId: "G-CD1ET7RGX1"
+            measurementId: "G-CD1ET7RGX1",
+            databaseURL: "https://isletme-76bad-default-rtdb.europe-west1.firebasedatabase.app/"
         };
         firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
-
-        // Firebase Realtime Database URL
-        const FIREBASE_DB_URL = 'https://isletme-76bad-default-rtdb.europe-west1.firebasedatabase.app/';
 
         // Google Sign-In logic
         let googleUser = null;
@@ -343,7 +400,6 @@
         let selectedJobType = '';
         let loggedInCompany = null;
         let isAdminLoggedIn = false;
-
 
 
         // Soru setleri
@@ -743,6 +799,99 @@
         }
 
         // JSONBin.io API fonksiyonları
+        async function createNewBin() {
+            // Sabit binId kullanıldığı için yeni bin oluşturulmayacak
+            throw new Error('Yeni bin oluşturma devre dışı. Sabit binId kullanılmaktadır.');
+        }
+
+        async function loadFromJSONBin() {
+            try {
+                // Sabit binId kullanıldığı için localStorage kontrolü kaldırıldı
+                if (!JSONBIN_CONFIG.binId) {
+                    throw new Error('Sabit binId tanımlı değil!');
+                }
+                console.log('JSONBin\'den veri yükleniyor... Bin ID:', JSONBIN_CONFIG.binId);
+                const response = await fetch(`${JSONBIN_CONFIG.baseUrl}/b/${JSONBIN_CONFIG.binId}/latest`, {
+                    headers: {
+                        'X-Master-Key': JSONBIN_CONFIG.apiKey,
+                        'X-Access-Key': JSONBIN_CONFIG.accessKey,
+                        'X-Bin-Meta': 'false'
+                    }
+                });
+                console.log('JSONBin yanıt durumu:', response.status);
+                if (response.ok) {
+                    const data = await response.json();
+                    console.log('JSONBin verisi yüklendi:', data);
+                    systemData.surveyData = data.record || data;
+                    return systemData.surveyData;
+                } else {
+                    const errorText = await response.text();
+                    console.error('JSONBin yanıt hatası:', response.status, response.statusText, errorText);
+                    throw new Error(`API Hatası: ${response.status} - ${errorText}`);
+                }
+            } catch (error) {
+                console.error('JSONBin yükleme hatası:', error);
+                // Varsayılan yapı döndür
+                const defaultData = {
+                    surveyName: "İşletme Yönetim Anketi - Sürüm 12",
+                    createdAt: new Date().toISOString(),
+                    responses: [],
+                    statistics: {
+                        totalResponses: 0,
+                        averageScore: 0,
+                        lastUpdated: new Date().toISOString()
+                    },
+                    companies: {}
+                };
+                systemData.surveyData = defaultData;
+                return defaultData;
+            }
+        }
+
+        async function saveToJSONBin(data, retryCount = 0) {
+            try {
+                // Sabit binId kullanıldığı için yeni bin oluşturulmayacak
+                if (!JSONBIN_CONFIG.binId) {
+                    throw new Error('Sabit binId tanımlı değil!');
+                }
+                console.log(`JSONBin'e veri kaydediliyor... Bin ID: ${JSONBIN_CONFIG.binId} (Deneme ${retryCount + 1}/${JSONBIN_CONFIG.maxRetries + 1})`);
+                const response = await fetch(`${JSONBIN_CONFIG.baseUrl}/b/${JSONBIN_CONFIG.binId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Master-Key': JSONBIN_CONFIG.apiKey,
+                        'X-Access-Key': JSONBIN_CONFIG.accessKey,
+                        'X-Bin-Versioning': 'false'
+                    },
+                    body: JSON.stringify(data)
+                });
+                console.log('JSONBin yanıt durumu:', response.status, response.statusText);
+                if (response.ok) {
+                    const result = await response.json();
+                    console.log('JSONBin kaydetme başarılı:', result);
+                    return { success: true, data: result };
+                } else {
+                    const errorText = await response.text();
+                    console.error('JSONBin API hatası:', response.status, response.statusText, errorText);
+                    // Yeniden deneme mantığı
+                    if (retryCount < JSONBIN_CONFIG.maxRetries && (response.status >= 500 || response.status === 429)) {
+                        console.log(`${JSONBIN_CONFIG.retryDelay}ms sonra yeniden denenecek...`);
+                        await new Promise(resolve => setTimeout(resolve, JSONBIN_CONFIG.retryDelay * (retryCount + 1)));
+                        return await saveToJSONBin(data, retryCount + 1);
+                    }
+                    return { success: false, error: `API Hatası: ${response.status} - ${errorText}` };
+                }
+            } catch (error) {
+                console.error('JSONBin bağlantı hatası:', error);
+                // Ağ hatalarında yeniden deneme
+                if (retryCount < JSONBIN_CONFIG.maxRetries) {
+                    console.log(`Ağ hatası - ${JSONBIN_CONFIG.retryDelay}ms sonra yeniden denenecek...`);
+                    await new Promise(resolve => setTimeout(resolve, JSONBIN_CONFIG.retryDelay * (retryCount + 1)));
+                    return await saveToJSONBin(data, retryCount + 1);
+                }
+                return { success: false, error: `Bağlantı Hatası: ${error.message}` };
+            }
+        }
 
         async function createCompanyIfNotExists(companyName) {
             try {
@@ -847,9 +996,9 @@
                 
                 // Yanıtı ekle
                 if (!systemData.surveyData.responses) {
-                    systemData.surveyData.responses = {};
+                    systemData.surveyData.responses = [];
                 }
-                systemData.surveyData.responses[surveyResponse.id] = surveyResponse;
+                systemData.surveyData.responses.push(surveyResponse);
                 
                 // İstatistikleri güncelle
                 if (!systemData.surveyData.statistics) {
@@ -860,17 +1009,17 @@
                     };
                 }
                 
-                systemData.surveyData.statistics.totalResponses = Object.keys(systemData.surveyData.responses).length;
+                systemData.surveyData.statistics.totalResponses = systemData.surveyData.responses.length;
                 systemData.surveyData.statistics.averageScore = (
-                    Object.values(systemData.surveyData.responses).reduce((sum, r) => sum + parseFloat(r.averageScore), 0) / 
-                    Object.keys(systemData.surveyData.responses).length
+                    systemData.surveyData.responses.reduce((sum, r) => sum + parseFloat(r.averageScore), 0) / 
+                    systemData.surveyData.responses.length
                 ).toFixed(2);
                 systemData.surveyData.statistics.lastUpdated = new Date().toISOString();
                 
                 // Şirket istatistiklerini güncelle
                 if (companyResult && systemData.surveyData.companies[companyResult.key]) {
                     systemData.surveyData.companies[companyResult.key].totalResponses = 
-                        Object.values(systemData.surveyData.responses).filter(r => 
+                        systemData.surveyData.responses.filter(r => 
                             r.companyName.toLowerCase() === companyName.toLowerCase()
                         ).length;
                 }
@@ -1036,25 +1185,125 @@
                 document.getElementById('detailedReport').innerHTML = '<p class="text-gray-500 text-center py-8">Henüz anket verisi bulunmuyor.</p>';
                 return;
             }
-            
+
+            // Grup ve kategori başlıkları
+            const groups = [
+                {
+                    name: 'Mavi Yaka',
+                    categories: [
+                        'Çalışma Ortamı',
+                        'Yemek ve Sosyal Haklar',
+                        'İş İlişkileri',
+                        'Sadakat ve Gelecek',
+                        'Dijitalleşme ve Yenilik',
+                        'Genel Memnuniyet'
+                    ]
+                },
+                {
+                    name: 'Beyaz Yaka',
+                    categories: [
+                        'Çalışma Ortamı',
+                        'Yönetim ve Liderlik',
+                        'İş Yükü ve Dengesi',
+                        'İç İletişim',
+                        'Kariyer Gelişimi',
+                        'Ücret ve Yan Haklar',
+                        'Takdir ve Geri Bildirim',
+                        'İş Süreçleri',
+                        'Kurum Kültürü',
+                        'Genel İş Memnuniyeti'
+                    ]
+                },
+                {
+                    name: 'Yönetim',
+                    categories: [
+                        'Finansal Performans ve Operasyonel Verimlilik',
+                        'Pazarlama ve Marka Yönetimi',
+                        'İnsan Kaynakları Yönetimi',
+                        'Müşteri/Çalışan İlişkileri ve Kalite Kontrol',
+                        'Teknolojik Altyapı ve Gelecek Vizyonu',
+                        'Genel Yönetim Memnuniyeti'
+                    ]
+                }
+            ];
+            const satisfactionLabels = ['Çok Memnunum', 'Memnun', 'Kararsızım', 'Memnun Değilim', 'Hiç Memnun Değilim'];
+
+            // Soru index aralıkları (örnek, gerçek indexler soru setine göre ayarlanmalı)
+            const groupRanges = {
+                'Mavi Yaka': [0, 49],
+                'Beyaz Yaka': [50, 99],
+                'Yönetim': [100, 149]
+            };
+
+            // Her grup ve kategori için frekansları hesapla
+            function getCategoryIndexes(group, catIdx) {
+                // Her kategori 10 soru ise:
+                const start = groupRanges[group][0] + catIdx * 10;
+                const end = start + 9;
+                return [start, end];
+            }
+
+            // Frekans tablosu oluştur
+            let table = `<div class="overflow-x-auto"><table class="min-w-full text-xs text-center border border-gray-300 mb-6">
+                <thead>
+                    <tr class="bg-gray-100">
+                        <th class="px-2 py-1">Grup / Soru</th>
+                        ${satisfactionLabels.map(l => `<th class="px-2 py-1">${l}</th>`).join('')}
+                    </tr>
+                </thead>
+                <tbody>`;
+
+            groups.forEach(group => {
+                // Grup genel yüzdeleri
+                const groupSurveys = surveys.filter(s => s.jobType === group.name);
+                let groupCounts = [0, 0, 0, 0, 0];
+                let groupTotal = 0;
+                groupSurveys.forEach(s => {
+                    s.answers.forEach(a => {
+                        groupCounts[a.score - 1]++;
+                        groupTotal++;
+                    });
+                });
+                let groupPercents = groupCounts.map(c => groupTotal ? (c * 100 / groupTotal).toFixed(1) + '%' : '0.0%');
+                table += `<tr class="font-bold bg-gray-50"><td>${group.name}</td>${groupPercents.map(p => `<td>${p}</td>`).join('')}</tr>`;
+
+                // Kategoriler
+                group.categories.forEach((cat, catIdx) => {
+                    let catCounts = [0, 0, 0, 0, 0];
+                    let catTotal = 0;
+                    groupSurveys.forEach(s => {
+                        // Sadece ilgili kategoriye ait sorular
+                        const [start, end] = getCategoryIndexes(group.name, catIdx);
+                        for (let i = start; i <= end && i < s.answers.length; i++) {
+                            const score = s.answers[i]?.score;
+                            if (score >= 1 && score <= 5) {
+                                catCounts[score - 1]++;
+                                catTotal++;
+                            }
+                        }
+                    });
+                    table += `<tr><td>${cat}</td>${catCounts.map(c => `<td>${c}</td>`).join('')}</tr>`;
+                });
+            });
+            table += '</tbody></table></div>';
+
+            // Eski özet raporları da koru
             // Pozisyon dağılımı
             const positionData = {};
             surveys.forEach(s => {
                 positionData[s.jobType] = (positionData[s.jobType] || 0) + 1;
             });
-            
             // Memnuniyet dağılımı - kişi bazında hesaplama
             const satisfactionLevels = ['Düşük (1-2)', 'Orta (3)', 'Yüksek (4-5)'];
             const satisfactionCounts = [0, 0, 0];
-            
             surveys.forEach(s => {
                 const avgScore = parseFloat(s.averageScore);
                 if (avgScore < 2.5) satisfactionCounts[0]++;
                 else if (avgScore >= 2.5 && avgScore < 3.5) satisfactionCounts[1]++;
                 else satisfactionCounts[2]++;
             });
-            
             const report = `
+                ${table}
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div class="bg-blue-50 p-4 rounded-lg">
                         <h4 class="font-semibold text-blue-800 mb-3">👥 Pozisyon Dağılımı</h4>
@@ -1064,9 +1313,7 @@
                                 <span class="font-semibold">${count} kişi</span>
                             </div>`
                         ).join('')}
-
                     </div>
-                    
                     <div class="bg-green-50 p-4 rounded-lg">
                         <h4 class="font-semibold text-green-800 mb-3">📊 Memnuniyet Seviyeleri</h4>
                         ${satisfactionLevels.map((level, i) => 
@@ -1077,7 +1324,6 @@
                         ).join('')}
                     </div>
                 </div>
-                
                 <div class="mt-4 bg-gray-50 p-4 rounded-lg">
                     <h4 class="font-semibold text-gray-800 mb-2">📈 Özet</h4>
                     <p class="text-sm text-gray-700">
@@ -1086,7 +1332,6 @@
                     </p>
                 </div>
             `;
-            
             document.getElementById('detailedReport').innerHTML = report;
         }
 
@@ -1836,8 +2081,13 @@
         }
 
         function loadDemoData() {
-            // Demo veri yükleme fonksiyonu kaldırıldı (JSONBin bağımlılığı kaldırıldı)
+            console.log('Demo veri yükleniyor...');
+            loadFromJSONBin().then(data => {
+                console.log('Demo veri yüklendi:', data);
+            }).catch(error => {
+                console.error('Demo veri yükleme hatası:', error);
+            });
         }
     </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'981a0e1e1249b657',t:'MTc1ODI5NTEwMS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</body>
 </html>
