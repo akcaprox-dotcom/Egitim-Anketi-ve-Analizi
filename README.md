@@ -801,52 +801,67 @@
         }
 
 
-        async function createCompanyIfNotExists(companyName) {
-            // Firebase ile şirket kontrol/oluşturma
+        // Firebase Realtime Database API fonksiyonları (GLOBAL SCOPE)
+        const FIREBASE_DB_URL = 'https://isletme-76bad-default-rtdb.europe-west1.firebasedatabase.app/';
+
+        async function loadFromFirebase() {
             try {
-                console.log('Şirket kontrol ediliyor:', companyName);
-                // Firebase'den mevcut veriyi çek
-                let snapshot = await firebase.database().ref('surveyData').once('value');
-                let data = snapshot.val();
-                if (!data) {
-                    data = { companies: {}, responses: [], statistics: {} };
-                }
-                systemData.surveyData = data;
+                const response = await fetch(FIREBASE_DB_URL + 'surveyData.json');
+                if (!response.ok) throw new Error('Firebase veri yükleme hatası');
+                const data = await response.json();
+                systemData.surveyData = data || { companies: {}, responses: [], statistics: {} };
+                return systemData.surveyData;
+            } catch (error) {
+                console.error('Firebase yükleme hatası:', error);
+                systemData.surveyData = { companies: {}, responses: [], statistics: {} };
+                return systemData.surveyData;
+            }
+        }
+
+        async function saveToFirebase(data) {
+            try {
+                const response = await fetch(FIREBASE_DB_URL + 'surveyData.json', {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                if (!response.ok) return { success: false, error: 'Firebase veri kaydetme hatası' };
+                return { success: true };
+            } catch (error) {
+                console.error('Firebase bağlantı hatası:', error);
+                return { success: false, error: error.message };
+            }
+        }
+
+        async function createCompanyIfNotExists(companyName) {
+            try {
+                if (!systemData.surveyData) await loadFromFirebase();
                 // Mevcut şirket var mı kontrol et
-                const existingCompany = Object.entries(data.companies || {})
+                const existingCompany = Object.entries(systemData.surveyData.companies || {})
                     .find(([key, company]) => company.name.toLowerCase() === companyName.toLowerCase());
                 if (existingCompany) {
-                    console.log('Mevcut şirket bulundu:', existingCompany[1]);
                     return { success: true, key: existingCompany[0], password: existingCompany[1].password };
                 }
                 // Yeni şirket oluştur
                 const companyKey = companyName.toLowerCase().replace(/[^a-z0-9]/g, '').substring(0, 10) + '-' + Date.now();
                 const newPassword = generateCompanyPassword();
-                if (!data.companies) data.companies = {};
-                data.companies[companyKey] = {
+                if (!systemData.surveyData.companies) systemData.surveyData.companies = {};
+                systemData.surveyData.companies[companyKey] = {
                     name: companyName,
                     password: newPassword,
                     createdAt: new Date().toISOString(),
                     totalResponses: 0,
                     status: 'aktif'
                 };
-                // Firebase'e kaydet
-                await firebase.database().ref('surveyData').set(data);
-                systemData.surveyData = data;
-                return { success: true, key: companyKey, password: newPassword };
+                const saveResult = await saveToFirebase(systemData.surveyData);
+                if (saveResult.success) {
+                    return { success: true, key: companyKey, password: newPassword };
+                } else {
+                    return { success: false, error: saveResult.error };
+                }
             } catch (error) {
-                console.error('Şirket oluşturma hatası:', error);
                 return { success: false, error: error.message };
             }
-        }
-
-        function generateCompanyPassword() {
-            const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-            let password = '';
-            for (let i = 0; i < 12; i++) {
-                password += chars.charAt(Math.floor(Math.random() * chars.length));
-            }
-            return password;
         }
 
         async function submitSurvey() {
@@ -865,13 +880,8 @@
                 if (!companyResult.success) {
                     throw new Error(`Şirket işlemi başarısız: ${companyResult.error}`);
                 }
-                // Firebase'den güncel veriyi çek
-                let snapshot = await firebase.database().ref('surveyData').once('value');
-                let data = snapshot.val();
-                if (!data) {
-                    data = { companies: {}, responses: [], statistics: {} };
-                }
-                systemData.surveyData = data;
+                // Firebase'den güncel veriyi çek (REST API)
+                let data = await loadFromFirebase();
                 const surveyResponse = {
                     id: 'survey_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9),
                     companyName: companyName,
@@ -908,8 +918,8 @@
                             r.companyName.toLowerCase() === companyName.toLowerCase()
                         ).length;
                 }
-                // Firebase'e kaydet
-                await firebase.database().ref('surveyData').set(data);
+                // Firebase'e kaydet (REST API)
+                await saveToFirebase(data);
                 systemData.surveyData = data;
                 // Başarı mesajı göster
                 document.getElementById('surveySection').innerHTML = `
@@ -1602,10 +1612,11 @@
             // Değerlendirme dağılımı
             const satisfactionCounts = [0, 0, 0];
             surveys.forEach(s => {
-                const avg = parseFloat(s.averageScore);
-                if (avg < 2.5) satisfactionCounts[0]++;
-                else if (avg < 3.5) satisfactionCounts[1]++;
-                else satisfactionCounts[2]++;
+                s.answers.forEach(answer => {
+                    if (answer.score <= 2) satisfactionCounts[0]++;
+                    else if (answer.score === 3) satisfactionCounts[1]++;
+                    else satisfactionCounts[2]++;
+                });
             });
             // Yanıt dağılımı
             const answerLevels = ['Düşük Memnuniyet (1-2)', 'Orta Memnuniyet (3)', 'Yüksek Memnuniyet (4-5)'];
@@ -1636,7 +1647,7 @@
                 .section-title { font-size: 1.2rem; font-weight: bold; margin-bottom: 8px; }
                 .table { width: 100%; border-collapse: collapse; margin-bottom: 16px; }
                 .table th, .table td { border: 1px solid #e5e7eb; padding: 8px 12px; text-align: left; }
-                .table th { background: #f1f5f9; }
+                .table th { background-color: #f2f2f2; }
                 .highlight { font-weight: bold; color: #dc2626; }
                 .info-box { background: #f1f5f9; border-radius: 8px; padding: 16px; margin-bottom: 12px; }
                 .category-box { background: #fef2f2; border-radius: 8px; padding: 16px; margin-bottom: 12px; }
@@ -1670,7 +1681,7 @@
                 </div>
                     <div class='summary-box'><div style='font-size:1.1rem;'>${totalParticipants}</div>Toplam Katılımcı</div>
                     <div class='summary-box'><div style='font-size:1.1rem;'>${avgScore}</div>Ortalama Puan</div>
-                    <div class='summary-box'><div style='font-size:1.1rem;'>${satisfactionPercent}%</div>Genel Memnuniyet</div>
+                    <div class='summary-box'><div style='font-size:1.1rem;'>${satisfactionRate}%</div>Genel Memnuniyet</div>
                 </div>
                 <div class='section info-box'>
                     <div class='section-title'>☑️ Genel Durum Değerlendirmesi</div>
