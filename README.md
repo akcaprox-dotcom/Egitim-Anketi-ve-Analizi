@@ -1074,6 +1074,28 @@
             generateCharts(surveys);
         }
 
+        function renderParticipantList(surveys) {
+            let html = `<table class="table-auto w-full text-xs"><thead><tr><th>İsim Soyisim</th><th>Ortalama Puan</th></tr></thead><tbody>`;
+            surveys.forEach(s => {
+                // İsim ve soyisim
+                const name = (s.name || "") + " " + (s.surname || "");
+                // Ortalama puan
+                let total = 0, count = 0;
+                if (Array.isArray(s.answers)) {
+                    s.answers.forEach(a => {
+                        if (a && typeof a.score === 'number') {
+                            total += a.score;
+                            count++;
+                        }
+                    });
+                }
+                const avg = count > 0 ? (total / count).toFixed(2) : "-";
+                html += `<tr><td>${name.trim()}</td><td>${avg}</td></tr>`;
+            });
+            html += `</tbody></table>`;
+            return html;
+        }
+
         function generateSimpleReport(surveys) {
             if (surveys.length === 0) {
                 document.getElementById('detailedReport').innerHTML = '<p class="text-gray-500 text-center py-8">Henüz anket verisi bulunmuyor.</p>';
@@ -1176,7 +1198,13 @@
                             }
                         }
                     });
-                    table += `<tr><td>${cat}</td>${catCounts.map(c => `<td>${c}</td>`).join('')}</tr>`;
+                    // DÜZELTME: Kategori toplamı 0 ise, grup toplamından paylaştır
+                    if (catTotal === 0 && groupTotal > 0) {
+                        // Kategoriye ait sorular yoksa, grup yüzdelerini göster
+                        table += `<tr><td>${cat}</td>${groupCounts.map(c => `<td>${c}</td>`).join('')}</tr>`;
+                    } else {
+                        table += `<tr><td>${cat}</td>${catCounts.map(c => `<td>${c}</td>`).join('')}</tr>`;
+                    }
                 });
             });
             table += '</tbody></table></div>';
@@ -1298,9 +1326,10 @@
                                 ${company.status === 'aktif' ? 'Aktif' : 'Pasif'}
                             </span>
                         </td>
-                        <td class="px-4 py-2 text-left">
-                            <button onclick="editCompany('${key}')" class="text-blue-600 hover:underline text-sm">
-                                Düzenle
+                        <td class="px-4 py-2 text-left flex gap-2">
+                            <button onclick="editCompany('${key}')" class="text-blue-600 hover:underline text-sm">Düzenle</button>
+                            <button onclick="toggleCompanyStatus('${key}')" class="text-xs px-2 py-1 rounded ${company.status === 'aktif' ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}">
+                                ${company.status === 'aktif' ? 'Pasif Yap' : 'Aktif Yap'}
                             </button>
                         </td>
                     `;
@@ -1323,6 +1352,13 @@
                     <label class="block text-sm font-medium text-gray-700 mb-1">Şifre</label>
                     <input type="text" id="editCompanyPassword" value="${company.password}" class="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500">
                 </div>
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Durum</label>
+                    <select id="editCompanyStatus" class="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500">
+                        <option value="aktif" ${company.status === 'aktif' ? 'selected' : ''}>Aktif</option>
+                        <option value="pasif" ${company.status === 'pasif' ? 'selected' : ''}>Pasif</option>
+                    </select>
+                </div>
                 <div class="flex gap-2">
                     <button onclick="saveCompanyChanges('${key}')" class="flex-1 py-2 px-4 rounded-lg bg-blue-600 text-white font-semibold hover:bg-blue-700 transition-colors">
                         Kaydet
@@ -1342,8 +1378,9 @@
         async function saveCompanyChanges(key) {
             const newName = document.getElementById('editCompanyName').value.trim();
             const newPassword = document.getElementById('editCompanyPassword').value.trim();
+            const newStatus = document.getElementById('editCompanyStatus') ? document.getElementById('editCompanyStatus').value : null;
 
-            if (!newName || !newPassword) {
+            if (!newName || !newPassword || !newStatus) {
                 return showModal('⚠️ Eksik Bilgi', 'Lütfen tüm alanları doldurun.');
             }
 
@@ -1352,6 +1389,7 @@
                 if (systemData.surveyData.companies[key]) {
                     systemData.surveyData.companies[key].name = newName;
                     systemData.surveyData.companies[key].password = newPassword;
+                    systemData.surveyData.companies[key].status = newStatus;
                 }
 
                 const result = await saveToFirebase(systemData.surveyData);
@@ -1365,194 +1403,216 @@
                 console.error('Şirket güncelleme hatası:', error);
                 showModal('❌ Hata', 'Şirket bilgileri güncellenirken bir hata oluştu. Lütfen tekrar deneyin.');
             }
+        // Şirket durumunu hızlıca değiştirmek için buton
+        async function toggleCompanyStatus(key) {
+            const company = systemData.surveyData.companies[key];
+            if (!company) return;
+            company.status = company.status === 'aktif' ? 'pasif' : 'aktif';
+            try {
+                const result = await saveToFirebase(systemData.surveyData);
+                if (result.success) {
+                    loadCompanyList();
+                } else {
+                    showModal('❌ Hata', 'Durum güncellenemedi.');
+                }
+            } catch (error) {
+                showModal('❌ Hata', 'Durum güncellenemedi.');
+            }
+        }
         }
 
         function generateCharts(surveys) {
-            // Pozisyon dağılımı grafiği
-            const positionChartCtx = document.getElementById('positionChart').getContext('2d');
-            const positionData = {};
-            surveys.forEach(s => {
-                positionData[s.jobType] = (positionData[s.jobType] || 0) + 1;
-            });
-            new Chart(positionChartCtx, {
-                type: 'pie',
-                data: {
-                    labels: Object.keys(positionData),
-                    datasets: [{
-                        data: Object.values(positionData),
-                        backgroundColor: ['#4caf50', '#2196f3', '#ff9800'],
-                        borderWidth: 0
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    plugins: {
-                        legend: {
-                            position: 'top',
-                        },
-                        tooltip: {
-                            callbacks: {
-                                label: function(tooltipItem) {
-                                    const label = tooltipItem.label || '';
-                                    const value = tooltipItem.raw || 0;
-                                    return `${label}: ${value} (${((value / surveys.length) * 100).toFixed(1)}%)`;
+                // Grafik nesnelerini globalde tut
+                if (!window._charts) window._charts = {};
+                // Pozisyon dağılımı grafiği
+                const positionChartCtx = document.getElementById('positionChart').getContext('2d');
+                const positionData = {};
+                surveys.forEach(s => {
+                    positionData[s.jobType] = (positionData[s.jobType] || 0) + 1;
+                });
+                if (window._charts.positionChart) window._charts.positionChart.destroy();
+                window._charts.positionChart = new Chart(positionChartCtx, {
+                    type: 'pie',
+                    data: {
+                        labels: Object.keys(positionData),
+                        datasets: [{
+                            data: Object.values(positionData),
+                            backgroundColor: ['#4caf50', '#2196f3', '#ff9800'],
+                            borderWidth: 0
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            legend: {
+                                position: 'top',
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(tooltipItem) {
+                                        const label = tooltipItem.label || '';
+                                        const value = tooltipItem.raw || 0;
+                                        return `${label}: ${value} (${((value / surveys.length) * 100).toFixed(1)}%)`;
+                                    }
                                 }
                             }
                         }
                     }
-                }
-            });
-
-            // Memnuniyet grafiği
-            const satisfactionChartCtx = document.getElementById('satisfactionChart').getContext('2d');
-            const satisfactionData = [0, 0, 0, 0, 0];
-            surveys.forEach(s => {
-                s.answers.forEach(a => {
-                    satisfactionData[a.score - 1]++;
                 });
-            });
-            new Chart(satisfactionChartCtx, {
-                type: 'bar',
-                data: {
-                    labels: ['Hiç Memnun Değilim', 'Memnun Değilim', 'Kararsızım', 'Memnunum', 'Çok Memnunum'],
+
+                // Memnuniyet grafiği
+                const satisfactionChartCtx = document.getElementById('satisfactionChart').getContext('2d');
+                const satisfactionData = [0, 0, 0, 0, 0];
+                surveys.forEach(s => {
+                    s.answers.forEach(a => {
+                        satisfactionData[a.score - 1]++;
+                    });
+                });
+                if (window._charts.satisfactionChart) window._charts.satisfactionChart.destroy();
+                window._charts.satisfactionChart = new Chart(satisfactionChartCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: ['Hiç Memnun Değilim', 'Memnun Değilim', 'Kararsızım', 'Memnunum', 'Çok Memnunum'],
+                        datasets: [{
+                            label: 'Memnuniyet Dağılımı',
+                            data: satisfactionData,
+                            backgroundColor: '#4caf50',
+                            borderColor: '#388e3c',
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        scales: {
+                            y: {
+                                beginAtZero: true
+                            }
+                        },
+                        plugins: {
+                            tooltip: {
+                                callbacks: {
+                                    label: function(tooltipItem) {
+                                        const label = tooltipItem.label || '';
+                                        const value = tooltipItem.raw || 0;
+                                        return `${label}: ${value} (${((value / surveys.length) * 100).toFixed(1)}%)`;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+
+                // Süre dağılımı grafiği
+                const timeChartCtx = document.getElementById('timeChart').getContext('2d');
+                const timeData = {
+                    labels: [], // Süre etiketleri (örneğin, 0-5 dk, 5-10 dk, ...)
                     datasets: [{
-                        label: 'Memnuniyet Dağılımı',
-                        data: satisfactionData,
+                        label: 'Katılımcı Sayısı',
+                        data: [],
+                        backgroundColor: '#2196f3',
+                        borderColor: '#1976d2',
+                        borderWidth: 1
+                    }]
+                };
+                // Süre aralıklarını belirle
+                const timeIntervals = [
+                    { min: 0, max: 5 },
+                    { min: 5, max: 10 },
+                    { min: 10, max: 15 },
+                    { min: 15, max: 20 },
+                    { min: 20, max: 30 },
+                    { min: 30, max: 60 },
+                    { min: 60, max: 120 }
+                ];
+                timeIntervals.forEach(interval => {
+                    const label = `${interval.min}-${interval.max} dk`;
+                    timeData.labels.push(label);
+                    const count = surveys.filter(s => {
+                        const minutes = parseInt(s.duration.split(':')[0], 10);
+                        return minutes >= interval.min && minutes < interval.max;
+                    }).length;
+                    timeData.datasets[0].data.push(count);
+                });
+                if (window._charts.timeChart) window._charts.timeChart.destroy();
+                window._charts.timeChart = new Chart(timeChartCtx, {
+                    type: 'bar',
+                    data: timeData,
+                    options: {
+                        responsive: true,
+                        scales: {
+                            y: {
+                                beginAtZero: true
+                            }
+                        },
+                        plugins: {
+                            tooltip: {
+                                callbacks: {
+                                    label: function(tooltipItem) {
+                                        const label = tooltipItem.label || '';
+                                        const value = tooltipItem.raw || 0;
+                                        return `${label}: ${value} katılımcı`;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+
+                // Puan dağılımı grafiği
+                const trendChartCtx = document.getElementById('trendChart').getContext('2d');
+                const trendData = {
+                    labels: [], // Zaman etiketleri (günler, haftalar vb.)
+                    datasets: [{
+                        label: 'Ortalama Puan',
+                        data: [],
                         backgroundColor: '#4caf50',
                         borderColor: '#388e3c',
                         borderWidth: 1
                     }]
-                },
-                options: {
-                    responsive: true,
-                    scales: {
-                        y: {
-                            beginAtZero: true
-                        }
-                    },
-                    plugins: {
-                        tooltip: {
-                            callbacks: {
-                                label: function(tooltipItem) {
-                                    const label = tooltipItem.label || '';
-                                    const value = tooltipItem.raw || 0;
-                                    return `${label}: ${value} (${((value / surveys.length) * 100).toFixed(1)}%)`;
+                };
+                // Günlük ortalama puanları hesapla
+                const dailyScores = {};
+                surveys.forEach(s => {
+                    const date = new Date(s.submittedAt).toISOString().split('T')[0]; // Yıl-Ay-Gün formatında
+                    if (!dailyScores[date]) {
+                        dailyScores[date] = { total: 0, count: 0 };
+                    }
+                    dailyScores[date].total += parseFloat(s.averageScore);
+                    dailyScores[date].count++;
+                });
+                // Tarihlere göre sırala
+                const sortedDates = Object.keys(dailyScores).sort();
+                sortedDates.forEach(date => {
+                    trendData.labels.push(date);
+                    const avgScore = (dailyScores[date].total / dailyScores[date].count).toFixed(2);
+                    trendData.datasets[0].data.push(avgScore);
+                });
+                if (window._charts.trendChart) window._charts.trendChart.destroy();
+                window._charts.trendChart = new Chart(trendChartCtx, {
+                    type: 'line',
+                    data: trendData,
+                    options: {
+                        responsive: true,
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                max: 5
+                            }
+                        },
+                        plugins: {
+                            tooltip: {
+                                callbacks: {
+                                    label: function(tooltipItem) {
+                                        const label = tooltipItem.label || '';
+                                        const value = tooltipItem.raw || 0;
+                                        return `${label}: ${value} puan`;
+                                    }
                                 }
                             }
                         }
                     }
-                }
-            });
-
-            // Süre dağılımı grafiği
-            const timeChartCtx = document.getElementById('timeChart').getContext('2d');
-            const timeData = {
-                labels: [], // Süre etiketleri (örneğin, 0-5 dk, 5-10 dk, ...)
-                datasets: [{
-                    label: 'Katılımcı Sayısı',
-                    data: [],
-                    backgroundColor: '#2196f3',
-                    borderColor: '#1976d2',
-                    borderWidth: 1
-                }]
-            };
-            // Süre aralıklarını belirle
-            const timeIntervals = [
-                { min: 0, max: 5 },
-                { min: 5, max: 10 },
-                { min: 10, max: 15 },
-                { min: 15, max: 20 },
-                { min: 20, max: 30 },
-                { min: 30, max: 60 },
-                { min: 60, max: 120 }
-            ];
-            timeIntervals.forEach(interval => {
-                const label = `${interval.min}-${interval.max} dk`;
-                timeData.labels.push(label);
-                const count = surveys.filter(s => {
-                    const minutes = parseInt(s.duration.split(':')[0], 10);
-                    return minutes >= interval.min && minutes < interval.max;
-                }).length;
-                timeData.datasets[0].data.push(count);
-            });
-            new Chart(timeChartCtx, {
-                type: 'bar',
-                data: timeData,
-                options: {
-                    responsive: true,
-                    scales: {
-                        y: {
-                            beginAtZero: true
-                        }
-                    },
-                    plugins: {
-                        tooltip: {
-                            callbacks: {
-                                label: function(tooltipItem) {
-                                    const label = tooltipItem.label || '';
-                                    const value = tooltipItem.raw || 0;
-                                    return `${label}: ${value} katılımcı`;
-                                }
-                            }
-                        }
-                    }
-                }
-            });
-
-            // Puan dağılımı grafiği
-            const trendChartCtx = document.getElementById('trendChart').getContext('2d');
-            const trendData = {
-                labels: [], // Zaman etiketleri (günler, haftalar vb.)
-                datasets: [{
-                    label: 'Ortalama Puan',
-                    data: [],
-                    backgroundColor: '#4caf50',
-                    borderColor: '#388e3c',
-                    borderWidth: 1
-                }]
-            };
-            // Günlük ortalama puanları hesapla
-            const dailyScores = {};
-            surveys.forEach(s => {
-                const date = new Date(s.submittedAt).toISOString().split('T')[0]; // Yıl-Ay-Gün formatında
-                if (!dailyScores[date]) {
-                    dailyScores[date] = { total: 0, count: 0 };
-                }
-                dailyScores[date].total += parseFloat(s.averageScore);
-                dailyScores[date].count++;
-            });
-            // Tarihlere göre sırala
-            const sortedDates = Object.keys(dailyScores).sort();
-            sortedDates.forEach(date => {
-                trendData.labels.push(date);
-                const avgScore = (dailyScores[date].total / dailyScores[date].count).toFixed(2);
-                trendData.datasets[0].data.push(avgScore);
-            });
-            new Chart(trendChartCtx, {
-                type: 'line',
-                data: trendData,
-                options: {
-                    responsive: true,
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            max: 5
-                        }
-                    },
-                    plugins: {
-                        tooltip: {
-                            callbacks: {
-                                label: function(tooltipItem) {
-                                    const label = tooltipItem.label || '';
-                                    const value = tooltipItem.raw || 0;
-                                    return `${label}: ${value} puan`;
-                                }
-                            }
-                        }
-                    }
-                }
-            });
-        }
+                });
+            }
     </script>
 </body>
 </html>
