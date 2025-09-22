@@ -1,9 +1,3 @@
-<!--
-Bu dosya, 'dosyamızhastane.html' ile birebir aynı uygulama mantığına ve işlevselliğe sahiptir.
-Tüm metinler, başlıklar ve içerik kelimesi kelimesine korunmuştur.
-Kodun tamamı, anket başlatma, raporlama, yönetim ve diğer tüm işlevlerle birlikte entegre edilmiştir.
--->
-
 <!DOCTYPE html>
 <html lang="tr">
 <head>
@@ -16,89 +10,6 @@ Kodun tamamı, anket başlatma, raporlama, yönetim ve diğer tüm işlevlerle b
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <!-- Firebase Auth -->
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
-    <style>
-        body {
-            font-family: 'Inter', sans-serif;
-        }
-        .gradient-bg {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        }
-        .active-tab {
-            border: 2px solid #6366f1;
-            background-color: #eef2ff;
-        }
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 1000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0,0,0,0.5);
-        }
-        .modal.show {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        @media print {
-            .no-print { display: none !important; }
-            body { background: white !important; }
-        }
-    </style>
-</head>
-<body class="bg-gray-100 min-h-screen">
-    <!-- Ana Navigasyon -->
-    <nav class="gradient-bg text-white p-3 shadow-lg sticky top-0 z-50">
-        <div class="max-w-5xl mx-auto flex flex-col md:flex-row justify-between items-center gap-2 md:gap-0">
-            <div class="flex items-center gap-2">
-                <!-- Gizli yönetici erişimi -->
-                <div onclick="showModule('admin')" class="w-4 h-4 cursor-pointer opacity-15 hover:opacity-50 transition-opacity" title="">
-                    <div class="w-4 h-4 rounded-full border border-white/30 flex items-center justify-center animate-spin" style="animation-duration: 12s;">
-                        <div class="w-1 h-1 bg-white/40 rounded-full"></div>
-                    </div>
-                </div>
-                <div>
-                    <h1 class="text-xl font-bold">Akça Pro X</h1>
-                    <p class="text-sm opacity-90">Kurumsal Anket ve Raporlama Sistemi</p>
-                </div>
-            </div>
-            <div class="flex gap-4">
-                <button onclick="showModule('survey')" class="px-4 py-2 bg-white/20 rounded-lg hover:bg-white/30 transition-colors">📊 Anket</button>
-                <button onclick="showModule('company')" class="px-4 py-2 bg-white/20 rounded-lg hover:bg-white/30 transition-colors">🏢 Şirket Portalı</button>
-            </div>
-        </div>
-    </nav>
-
-    <!-- Anket Modülü -->
-    <div id="surveyModule" class="max-w-5xl mx-auto p-2 md:p-4">
-        <div class="bg-white shadow-xl rounded-2xl max-w-2xl mx-auto p-4 md:p-8">
-            <div class="text-center mb-6">
-                <h2 class="text-2xl md:text-3xl font-extrabold text-gray-800 mb-1 tracking-tight">İşletme Yönetim Anketi</h2>
-                <p class="text-gray-600 mb-2 text-base md:text-lg">Görüşleriniz bizim için değerli</p>
-                <span class="bg-green-100 text-green-800 text-xs font-semibold px-2 py-1 rounded-full">v3.0.0 - JSONBin.io Entegre</span>
-            </div>
-
-            <!-- Sorumluluk Reddi -->
-            <div id="disclaimerSection" class="mb-4">
-                <div class="bg-yellow-50 border border-yellow-300 rounded-lg p-3 mb-3">
-                    <h3 class="font-semibold text-yellow-800 mb-2 text-sm">⚠️ Veri Koruma Beyanı</h3>
-                    <div class="text-xs text-yellow-700 space-y-1">
-                        <p>• Verileriniz JSONBin.io güvenli sisteminde saklanır ve üçüncü taraflarla paylaşılmaz.</p>
-                        <p>• Anket sonuçları sadece şirket yetkilileri tarafından görüntülenebilir.</p>
-                        <p>• Sistem güvenliği JSONBin.io sorumluluğundadır.</p>
-                        <p>• Hack, veri ihlali vb. güvenlik olaylarından kaynaklanan bilgi erişimlerinin sorumluluğu Akça Pro X'e ait değildir.</p>
-                    </div>
-                </div>
-                <label class="flex items-center space-x-2 cursor-pointer">
-                    <input type="checkbox" id="acceptDisclaimer" class="w-4 h-4 text-purple-600">
-                    <span class="text-xs font-medium">Veri koruma beyanını kabul ediyorum</span>
-                </label>
-            </div>
-
-            <!-- Şirket Bilgileri -->
-            <div id="companyInfoSection" class="">
                 <h3 class="text-base font-semibold text-gray-700 mb-3">Şirket ve Kişisel Bilgiler</h3>
                 <!-- Google ile Giriş Yap butonu -->
                 <div class="mb-3 flex flex-col items-center">
@@ -832,99 +743,6 @@ Kodun tamamı, anket başlatma, raporlama, yönetim ve diğer tüm işlevlerle b
         }
 
         // JSONBin.io API fonksiyonları
-        async function createNewBin() {
-            // Sabit binId kullanıldığı için yeni bin oluşturulmayacak
-            throw new Error('Yeni bin oluşturma devre dışı. Sabit binId kullanılmaktadır.');
-        }
-
-        async function loadFromJSONBin() {
-            try {
-                // Sabit binId kullanıldığı için localStorage kontrolü kaldırıldı
-                if (!JSONBIN_CONFIG.binId) {
-                    throw new Error('Sabit binId tanımlı değil!');
-                }
-                console.log('JSONBin\'den veri yükleniyor... Bin ID:', JSONBIN_CONFIG.binId);
-                const response = await fetch(`${JSONBIN_CONFIG.baseUrl}/b/${JSONBIN_CONFIG.binId}/latest`, {
-                    headers: {
-                        'X-Master-Key': JSONBIN_CONFIG.apiKey,
-                        'X-Access-Key': JSONBIN_CONFIG.accessKey,
-                        'X-Bin-Meta': 'false'
-                    }
-                });
-                console.log('JSONBin yanıt durumu:', response.status);
-                if (response.ok) {
-                    const data = await response.json();
-                    console.log('JSONBin verisi yüklendi:', data);
-                    systemData.surveyData = data.record || data;
-                    return systemData.surveyData;
-                } else {
-                    const errorText = await response.text();
-                    console.error('JSONBin yanıt hatası:', response.status, response.statusText, errorText);
-                    throw new Error(`API Hatası: ${response.status} - ${errorText}`);
-                }
-            } catch (error) {
-                console.error('JSONBin yükleme hatası:', error);
-                // Varsayılan yapı döndür
-                const defaultData = {
-                    surveyName: "İşletme Yönetim Anketi - Sürüm 12",
-                    createdAt: new Date().toISOString(),
-                    responses: [],
-                    statistics: {
-                        totalResponses: 0,
-                        averageScore: 0,
-                        lastUpdated: new Date().toISOString()
-                    },
-                    companies: {}
-                };
-                systemData.surveyData = defaultData;
-                return defaultData;
-            }
-        }
-
-        async function saveToJSONBin(data, retryCount = 0) {
-            try {
-                // Sabit binId kullanıldığı için yeni bin oluşturulmayacak
-                if (!JSONBIN_CONFIG.binId) {
-                    throw new Error('Sabit binId tanımlı değil!');
-                }
-                console.log(`JSONBin'e veri kaydediliyor... Bin ID: ${JSONBIN_CONFIG.binId} (Deneme ${retryCount + 1}/${JSONBIN_CONFIG.maxRetries + 1})`);
-                const response = await fetch(`${JSONBIN_CONFIG.baseUrl}/b/${JSONBIN_CONFIG.binId}`, {
-                    method: 'PUT',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-Master-Key': JSONBIN_CONFIG.apiKey,
-                        'X-Access-Key': JSONBIN_CONFIG.accessKey,
-                        'X-Bin-Versioning': 'false'
-                    },
-                    body: JSON.stringify(data)
-                });
-                console.log('JSONBin yanıt durumu:', response.status, response.statusText);
-                if (response.ok) {
-                    const result = await response.json();
-                    console.log('JSONBin kaydetme başarılı:', result);
-                    return { success: true, data: result };
-                } else {
-                    const errorText = await response.text();
-                    console.error('JSONBin API hatası:', response.status, response.statusText, errorText);
-                    // Yeniden deneme mantığı
-                    if (retryCount < JSONBIN_CONFIG.maxRetries && (response.status >= 500 || response.status === 429)) {
-                        console.log(`${JSONBIN_CONFIG.retryDelay}ms sonra yeniden denenecek...`);
-                        await new Promise(resolve => setTimeout(resolve, JSONBIN_CONFIG.retryDelay * (retryCount + 1)));
-                        return await saveToJSONBin(data, retryCount + 1);
-                    }
-                    return { success: false, error: `API Hatası: ${response.status} - ${errorText}` };
-                }
-            } catch (error) {
-                console.error('JSONBin bağlantı hatası:', error);
-                // Ağ hatalarında yeniden deneme
-                if (retryCount < JSONBIN_CONFIG.maxRetries) {
-                    console.log(`Ağ hatası - ${JSONBIN_CONFIG.retryDelay}ms sonra yeniden denenecek...`);
-                    await new Promise(resolve => setTimeout(resolve, JSONBIN_CONFIG.retryDelay * (retryCount + 1)));
-                    return await saveToJSONBin(data, retryCount + 1);
-                }
-                return { success: false, error: `Bağlantı Hatası: ${error.message}` };
-            }
-        }
 
         async function createCompanyIfNotExists(companyName) {
             try {
@@ -2018,12 +1836,7 @@ Kodun tamamı, anket başlatma, raporlama, yönetim ve diğer tüm işlevlerle b
         }
 
         function loadDemoData() {
-            console.log('Demo veri yükleniyor...');
-            loadFromJSONBin().then(data => {
-                console.log('Demo veri yüklendi:', data);
-            }).catch(error => {
-                console.error('Demo veri yükleme hatası:', error);
-            });
+            // Demo veri yükleme fonksiyonu kaldırıldı (JSONBin bağımlılığı kaldırıldı)
         }
     </script>
 <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'981a0e1e1249b657',t:'MTc1ODI5NTEwMS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
