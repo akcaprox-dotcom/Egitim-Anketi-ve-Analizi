@@ -1083,11 +1083,13 @@
                 const name = (s.name || '') + ' ' + (s.surname || '');
                 const job = s.jobType || '';
                 let total = 0, count = 0;
+                let puanlar = [];
                 if (Array.isArray(s.answers)) {
                     s.answers.forEach(a => {
                         if (a && typeof a.score === 'number') {
                             total += a.score;
                             count++;
+                            puanlar.push(a.score);
                         }
                     });
                 }
@@ -1103,7 +1105,7 @@
                     else mem = 'Hiç Memnun Değil';
                 }
                 const tarih = s.submittedAt ? new Date(s.submittedAt).toLocaleDateString('tr-TR') : '';
-                tbody.innerHTML += `<tr><td class="px-3 py-2">${name.trim()}</td><td class="px-3 py-2">${job}</td><td class="px-3 py-2 text-center">${avg}</td><td class="px-3 py-2 text-center">${mem}</td><td class="px-3 py-2 text-center">${tarih}</td></tr>`;
+                tbody.innerHTML += `<tr><td class="px-3 py-2">${name.trim()}</td><td class="px-3 py-2">${job}</td><td class="px-3 py-2 text-center">${avg} <span class='text-xs text-gray-400'>[${puanlar.join(', ')}]</span></td><td class="px-3 py-2 text-center">${mem}</td><td class="px-3 py-2 text-center">${tarih}</td></tr>`;
             });
         }
         // Katılımcı detaylarını göster/gizle
@@ -1420,18 +1422,16 @@
         }
 
         async function saveCompanyChanges(key) {
-            const newName = document.getElementById('editCompanyName').value.trim();
             const newPassword = document.getElementById('editCompanyPassword').value.trim();
             const newStatus = document.getElementById('editCompanyStatus') ? document.getElementById('editCompanyStatus').value : null;
 
-            if (!newName || !newPassword || !newStatus) {
+            if (!newPassword || !newStatus) {
                 return showModal('⚠️ Eksik Bilgi', 'Lütfen tüm alanları doldurun.');
             }
 
             try {
-                // Şirket adını güncelle
+                // Sadece şifre ve durum güncelle
                 if (systemData.surveyData.companies[key]) {
-                    systemData.surveyData.companies[key].name = newName;
                     systemData.surveyData.companies[key].password = newPassword;
                     systemData.surveyData.companies[key].status = newStatus;
                 }
