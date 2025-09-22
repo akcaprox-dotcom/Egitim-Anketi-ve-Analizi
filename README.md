@@ -1253,7 +1253,7 @@
         async function loadAdminDashboard() {
             try {
                 if (!systemData.surveyData) {
-                    systemData.surveyData = await loadFromJSONBin();
+                    systemData.surveyData = await loadFromFirebase();
                 }
                 
                 const companies = systemData.surveyData.companies || {};
@@ -1268,4 +1268,291 @@
                 loadCompanyList();
             } catch (error) {
                 console.error('Admin dashboard yükleme hatası:', error);
-                showModal('
+                showModal('❌ Hata', 'Yönetici paneli verileri yüklenirken bir hata oluştu. Lütfen tekrar deneyin.');
+            }
+        }
+
+        function logoutAdmin() {
+            isAdminLoggedIn = false;
+            document.getElementById('adminLogin').classList.remove('hidden');
+            document.getElementById('adminDashboard').classList.add('hidden');
+            document.getElementById('adminPassword').value = '';
+        }
+
+        function loadCompanyList() {
+            const searchTerm = document.getElementById('companySearchInput').value.trim().toLowerCase();
+            const companies = systemData.surveyData.companies || {};
+            const companyListEl = document.getElementById('companyList');
+            companyListEl.innerHTML = '';
+
+            Object.entries(companies).forEach(([key, company]) => {
+                if (company.name.toLowerCase().includes(searchTerm)) {
+                    const row = document.createElement('tr');
+                    row.classList.add('hover:bg-gray-50', 'transition-colors');
+                    row.innerHTML = `
+                        <td class="px-4 py-2 text-left">${company.name}</td>
+                        <td class="px-4 py-2 text-left">${company.password}</td>
+                        <td class="px-4 py-2 text-left">${company.totalResponses || 0}</td>
+                        <td class="px-4 py-2 text-left">
+                            <span class="text-xs font-semibold ${company.status === 'aktif' ? 'text-green-600' : 'text-red-600'}">
+                                ${company.status === 'aktif' ? 'Aktif' : 'Pasif'}
+                            </span>
+                        </td>
+                        <td class="px-4 py-2 text-left">
+                            <button onclick="editCompany('${key}')" class="text-blue-600 hover:underline text-sm">
+                                Düzenle
+                            </button>
+                        </td>
+                    `;
+                    companyListEl.appendChild(row);
+                }
+            });
+        }
+
+        function editCompany(key) {
+            const company = systemData.surveyData.companies[key];
+            if (!company) return;
+
+            document.getElementById('modalContent').innerHTML = `
+                <h3 class="text-lg font-semibold mb-4">Şirket Bilgilerini Düzenle</h3>
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Şirket Adı</label>
+                    <input type="text" id="editCompanyName" value="${company.name}" class="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500">
+                </div>
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Şifre</label>
+                    <input type="text" id="editCompanyPassword" value="${company.password}" class="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500">
+                </div>
+                <div class="flex gap-2">
+                    <button onclick="saveCompanyChanges('${key}')" class="flex-1 py-2 px-4 rounded-lg bg-blue-600 text-white font-semibold hover:bg-blue-700 transition-colors">
+                        Kaydet
+                    </button>
+                    <button onclick="closeModal()" class="flex-1 py-2 px-4 rounded-lg bg-gray-200 text-gray-700 font-semibold hover:bg-gray-300 transition-colors">
+                        İptal
+                    </button>
+                </div>
+            `;
+            document.getElementById('modal').classList.add('show');
+        }
+
+        function closeModal() {
+            document.getElementById('modal').classList.remove('show');
+        }
+
+        async function saveCompanyChanges(key) {
+            const newName = document.getElementById('editCompanyName').value.trim();
+            const newPassword = document.getElementById('editCompanyPassword').value.trim();
+
+            if (!newName || !newPassword) {
+                return showModal('⚠️ Eksik Bilgi', 'Lütfen tüm alanları doldurun.');
+            }
+
+            try {
+                // Şirket adını güncelle
+                if (systemData.surveyData.companies[key]) {
+                    systemData.surveyData.companies[key].name = newName;
+                    systemData.surveyData.companies[key].password = newPassword;
+                }
+
+                const result = await saveToFirebase(systemData.surveyData);
+                if (result.success) {
+                    showModal('✅ Başarılı', 'Şirket bilgileri başarıyla güncellendi.');
+                    loadCompanyList();
+                } else {
+                    showModal('❌ Hata', 'Şirket bilgileri güncellenirken bir hata oluştu. Lütfen tekrar deneyin.');
+                }
+            } catch (error) {
+                console.error('Şirket güncelleme hatası:', error);
+                showModal('❌ Hata', 'Şirket bilgileri güncellenirken bir hata oluştu. Lütfen tekrar deneyin.');
+            }
+        }
+
+        function generateCharts(surveys) {
+            // Pozisyon dağılımı grafiği
+            const positionChartCtx = document.getElementById('positionChart').getContext('2d');
+            const positionData = {};
+            surveys.forEach(s => {
+                positionData[s.jobType] = (positionData[s.jobType] || 0) + 1;
+            });
+            new Chart(positionChartCtx, {
+                type: 'pie',
+                data: {
+                    labels: Object.keys(positionData),
+                    datasets: [{
+                        data: Object.values(positionData),
+                        backgroundColor: ['#4caf50', '#2196f3', '#ff9800'],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(tooltipItem) {
+                                    const label = tooltipItem.label || '';
+                                    const value = tooltipItem.raw || 0;
+                                    return `${label}: ${value} (${((value / surveys.length) * 100).toFixed(1)}%)`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Memnuniyet grafiği
+            const satisfactionChartCtx = document.getElementById('satisfactionChart').getContext('2d');
+            const satisfactionData = [0, 0, 0, 0, 0];
+            surveys.forEach(s => {
+                s.answers.forEach(a => {
+                    satisfactionData[a.score - 1]++;
+                });
+            });
+            new Chart(satisfactionChartCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Hiç Memnun Değilim', 'Memnun Değilim', 'Kararsızım', 'Memnunum', 'Çok Memnunum'],
+                    datasets: [{
+                        label: 'Memnuniyet Dağılımı',
+                        data: satisfactionData,
+                        backgroundColor: '#4caf50',
+                        borderColor: '#388e3c',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    },
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: function(tooltipItem) {
+                                    const label = tooltipItem.label || '';
+                                    const value = tooltipItem.raw || 0;
+                                    return `${label}: ${value} (${((value / surveys.length) * 100).toFixed(1)}%)`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Süre dağılımı grafiği
+            const timeChartCtx = document.getElementById('timeChart').getContext('2d');
+            const timeData = {
+                labels: [], // Süre etiketleri (örneğin, 0-5 dk, 5-10 dk, ...)
+                datasets: [{
+                    label: 'Katılımcı Sayısı',
+                    data: [],
+                    backgroundColor: '#2196f3',
+                    borderColor: '#1976d2',
+                    borderWidth: 1
+                }]
+            };
+            // Süre aralıklarını belirle
+            const timeIntervals = [
+                { min: 0, max: 5 },
+                { min: 5, max: 10 },
+                { min: 10, max: 15 },
+                { min: 15, max: 20 },
+                { min: 20, max: 30 },
+                { min: 30, max: 60 },
+                { min: 60, max: 120 }
+            ];
+            timeIntervals.forEach(interval => {
+                const label = `${interval.min}-${interval.max} dk`;
+                timeData.labels.push(label);
+                const count = surveys.filter(s => {
+                    const minutes = parseInt(s.duration.split(':')[0], 10);
+                    return minutes >= interval.min && minutes < interval.max;
+                }).length;
+                timeData.datasets[0].data.push(count);
+            });
+            new Chart(timeChartCtx, {
+                type: 'bar',
+                data: timeData,
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    },
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: function(tooltipItem) {
+                                    const label = tooltipItem.label || '';
+                                    const value = tooltipItem.raw || 0;
+                                    return `${label}: ${value} katılımcı`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Puan dağılımı grafiği
+            const trendChartCtx = document.getElementById('trendChart').getContext('2d');
+            const trendData = {
+                labels: [], // Zaman etiketleri (günler, haftalar vb.)
+                datasets: [{
+                    label: 'Ortalama Puan',
+                    data: [],
+                    backgroundColor: '#4caf50',
+                    borderColor: '#388e3c',
+                    borderWidth: 1
+                }]
+            };
+            // Günlük ortalama puanları hesapla
+            const dailyScores = {};
+            surveys.forEach(s => {
+                const date = new Date(s.submittedAt).toISOString().split('T')[0]; // Yıl-Ay-Gün formatında
+                if (!dailyScores[date]) {
+                    dailyScores[date] = { total: 0, count: 0 };
+                }
+                dailyScores[date].total += parseFloat(s.averageScore);
+                dailyScores[date].count++;
+            });
+            // Tarihlere göre sırala
+            const sortedDates = Object.keys(dailyScores).sort();
+            sortedDates.forEach(date => {
+                trendData.labels.push(date);
+                const avgScore = (dailyScores[date].total / dailyScores[date].count).toFixed(2);
+                trendData.datasets[0].data.push(avgScore);
+            });
+            new Chart(trendChartCtx, {
+                type: 'line',
+                data: trendData,
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 5
+                        }
+                    },
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: function(tooltipItem) {
+                                    const label = tooltipItem.label || '';
+                                    const value = tooltipItem.raw || 0;
+                                    return `${label}: ${value} puan`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+    </script>
+</body>
+</html>
