@@ -224,34 +224,43 @@
                     </div>
                     
                     <!-- Katılımcı Detayları Bölümü -->
-                    <div class="bg-white border rounded-lg p-4 mb-4">
-                        <div class="flex justify-between items-center mb-3">
-                            <h4 class="font-semibold text-gray-800">👥 Katılımcı Detayları</h4>
-                            <button onclick="toggleParticipantDetails()" id="toggleParticipantsBtn" class="px-3 py-1 bg-blue-600 text-white text-sm rounded hover:bg-blue-700">
-                                📋 Katılımcıları Görüntüle
-                            </button>
-                        </div>
-                        <div id="participantDetails" class="hidden">
-                            <div class="overflow-x-auto">
-                                <table class="w-full table-auto text-sm">
-                                    <thead>
-                                        <tr class="bg-gray-100">
-                                            <th class="px-3 py-2 text-left">İsim</th>
-                                            <th class="px-3 py-2 text-left">Pozisyon</th>
-                                            <th class="px-3 py-2 text-center">Ortalama Puan</th>
-                                            <th class="px-3 py-2 text-center">Memnuniyet</th>
-                                            <th class="px-3 py-2 text-center">Tarih</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="participantTableBody">
-                                        <!-- Katılımcı listesi buraya yüklenecek -->
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
                     
                     <div id="detailedReport" class="space-y-3"></div>
+    <!-- Katılımcı Listesi (Rapor Ekranı En Alt) -->
+    <div id="participantListSection" class="bg-white border rounded-lg p-4 mt-6">
+        <button id="toggleParticipantListBtn" class="w-full flex items-center justify-between font-semibold text-gray-800 mb-3 focus:outline-none" onclick="toggleParticipantList()">
+            <span>👥 Katılımcı Listesi</span>
+            <span id="participantListArrow">▼</span>
+        </button>
+        <div id="participantListTableWrapper" class="overflow-x-auto hidden">
+            <table class="w-full table-auto text-sm">
+                <thead>
+                    <tr class="bg-gray-100">
+                        <th class="px-3 py-2 text-left">İsim Soyisim</th>
+                        <th class="px-3 py-2 text-left">Ünvan</th>
+                        <th class="px-3 py-2 text-center">Yanıt Ortalaması</th>
+                        <th class="px-3 py-2 text-center">Anket Tarihi</th>
+                    </tr>
+                </thead>
+                <tbody id="participantListBody">
+                    <!-- Katılımcı listesi buraya yüklenecek -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+<script>
+function toggleParticipantList() {
+    const wrapper = document.getElementById('participantListTableWrapper');
+    const arrow = document.getElementById('participantListArrow');
+    if (wrapper.classList.contains('hidden')) {
+        wrapper.classList.remove('hidden');
+        arrow.textContent = '▲';
+    } else {
+        wrapper.classList.add('hidden');
+        arrow.textContent = '▼';
+    }
+}
+</script>
                 </div>
             </div>
         </div>
@@ -1072,46 +1081,52 @@
             }
             generateSimpleReport(surveys);
             generateCharts(surveys);
-            // Katılımcı detay tablosunu da güncelle
-            updateParticipantTable(surveys);
-        // Katılımcı detay tablosunu güncelleyen fonksiyon
-        function updateParticipantTable(surveys) {
-            const tbody = document.getElementById('participantTableBody');
+            // Katılımcı listesini güncelle (en alt tablo)
+            updateParticipantListTable(surveys);
+        // Katılımcı listesini güncelleyen fonksiyon (en alt tablo)
+        function updateParticipantListTable(surveys) {
+            const tbody = document.getElementById('participantListBody');
             if (!tbody) return;
             tbody.innerHTML = '';
             surveys.forEach(s => {
-                const name = (s.name || '') + ' ' + (s.surname || '');
-                const job = s.jobType || '';
+                // İsim ve soyisim için tüm olasılıkları kontrol et
+                let name = '';
+                if (s.name || s.surname) {
+                    name = ((s.name || '') + ' ' + (s.surname || '')).trim();
+                } else if (s.firstName || s.lastName) {
+                    name = ((s.firstName || '') + ' ' + (s.lastName || '')).trim();
+                } else if (s.fullName) {
+                    name = s.fullName;
+                } else if (s.adSoyad) {
+                    name = s.adSoyad;
+                } else {
+                    name = '-';
+                }
+                const job = s.jobType || s.unvan || s.title || '';
                 let total = 0, count = 0;
-                let puanlar = [];
                 if (Array.isArray(s.answers)) {
                     s.answers.forEach(a => {
                         if (a && typeof a.score === 'number') {
                             total += a.score;
                             count++;
-                            puanlar.push(a.score);
                         }
                     });
                 }
                 const avg = count > 0 ? (total / count).toFixed(2) : '-';
-                // Memnuniyet etiketi
-                let mem = '-';
-                if (avg !== '-') {
-                    const n = parseFloat(avg);
-                    if (n >= 4) mem = 'Çok Memnun';
-                    else if (n >= 3) mem = 'Memnun';
-                    else if (n >= 2) mem = 'Kararsız';
-                    else if (n >= 1) mem = 'Memnun Değil';
-                    else mem = 'Hiç Memnun Değil';
-                }
                 const tarih = s.submittedAt ? new Date(s.submittedAt).toLocaleDateString('tr-TR') : '';
-                tbody.innerHTML += `<tr><td class="px-3 py-2">${name.trim()}</td><td class="px-3 py-2">${job}</td><td class="px-3 py-2 text-center">${avg} <span class='text-xs text-gray-400'>[${puanlar.join(', ')}]</span></td><td class="px-3 py-2 text-center">${mem}</td><td class="px-3 py-2 text-center">${tarih}</td></tr>`;
+                tbody.innerHTML += `<tr><td class="px-3 py-2">${name}</td><td class="px-3 py-2">${job}</td><td class="px-3 py-2 text-center">${avg}</td><td class="px-3 py-2 text-center">${tarih}</td></tr>`;
             });
         }
         // Katılımcı detaylarını göster/gizle
         function toggleParticipantDetails() {
             const details = document.getElementById('participantDetails');
             if (!details) return;
+            // Her açılışta tabloyu güncelle
+            if (details.classList.contains('hidden')) {
+                // Filtreli veri varsa onu kullan
+                let surveys = (typeof filteredSurveys !== 'undefined' && filteredSurveys !== null) ? filteredSurveys : systemData.surveyData.responses.filter(s => s.companyName.toLowerCase() === loggedInCompany.name.toLowerCase());
+                updateParticipantTable(surveys);
+            }
             details.classList.toggle('hidden');
             const btn = document.getElementById('toggleParticipantsBtn');
             if (btn) {
@@ -1438,9 +1453,9 @@
 
                 const result = await saveToFirebase(systemData.surveyData);
                 if (result.success) {
+                    closeModal(); // Önce modalı kapat
+                    loadCompanyList(); // Sonra tabloyu güncelle
                     showModal('✅ Başarılı', 'Şirket bilgileri başarıyla güncellendi.');
-                    loadCompanyList();
-                    closeModal();
                 } else {
                     showModal('❌ Hata', 'Şirket bilgileri güncellenirken bir hata oluştu. Lütfen tekrar deneyin.');
                 }
@@ -1452,12 +1467,35 @@
         async function toggleCompanyStatus(key) {
             const company = systemData.surveyData.companies[key];
             if (!company) return;
+            // Durumu değiştir
             company.status = company.status === 'aktif' ? 'pasif' : 'aktif';
+
+            // Anlık olarak DOM'da ilgili satırı güncelle (optimistik güncelleme)
+            const companyListEl = document.getElementById('companyList');
+            if (companyListEl) {
+                // Tüm satırları tara, ilgili şirketi bul
+                Array.from(companyListEl.children).forEach(row => {
+                    if (row.children[0] && row.children[0].textContent === company.name) {
+                        // Durum hücresini güncelle
+                        const statusCell = row.children[3];
+                        if (statusCell) {
+                            statusCell.innerHTML = `<span class="text-xs font-semibold ${company.status === 'aktif' ? 'text-green-600' : 'text-red-600'}">${company.status === 'aktif' ? 'Aktif' : 'Pasif'}</span>`;
+                        }
+                        // Buton metnini ve rengini güncelle
+                        const btn = row.querySelector('button[onclick^="toggleCompanyStatus"]');
+                        if (btn) {
+                            btn.textContent = company.status === 'aktif' ? 'Pasif Yap' : 'Aktif Yap';
+                            btn.className = `text-xs px-2 py-1 rounded ${company.status === 'aktif' ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}`;
+                        }
+                    }
+                });
+            }
+
             try {
                 const result = await saveToFirebase(systemData.surveyData);
-                if (result.success) {
-                    loadCompanyList();
-                } else {
+                // Yine de tabloyu tazele (veri tutarlılığı için)
+                loadCompanyList();
+                if (!result.success) {
                     showModal('❌ Hata', 'Durum güncellenemedi.');
                 }
             } catch (error) {
