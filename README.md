@@ -81,9 +81,9 @@
                 <div class="bg-yellow-50 border border-yellow-300 rounded-lg p-3 mb-3">
                     <h3 class="font-semibold text-yellow-800 mb-2 text-sm">⚠️ Veri Koruma Beyanı</h3>
                     <div class="text-xs text-yellow-700 space-y-1">
-                        <p>• Verileriniz JSONBin.io güvenli sisteminde saklanır ve üçüncü taraflarla paylaşılmaz.</p>
+                        <p>• Verileriniz Firebase güvenli bulut altyapısında saklanır ve üçüncü taraflarla paylaşılmaz.</p>
                         <p>• Anket sonuçları sadece şirket yetkilileri tarafından görüntülenebilir.</p>
-                        <p>• Sistem güvenliği JSONBin.io sorumluluğundadır.</p>
+                        <p>• Sistem güvenliği Google Firebase altyapısı sorumluluğundadır.</p>
                         <p>• Hack, veri ihlali vb. güvenlik olaylarından kaynaklanan bilgi erişimlerinin sorumluluğu Akça Pro X'e ait değildir.</p>
                     </div>
                 </div>
@@ -1072,6 +1072,50 @@
             }
             generateSimpleReport(surveys);
             generateCharts(surveys);
+            // Katılımcı detay tablosunu da güncelle
+            updateParticipantTable(surveys);
+        // Katılımcı detay tablosunu güncelleyen fonksiyon
+        function updateParticipantTable(surveys) {
+            const tbody = document.getElementById('participantTableBody');
+            if (!tbody) return;
+            tbody.innerHTML = '';
+            surveys.forEach(s => {
+                const name = (s.name || '') + ' ' + (s.surname || '');
+                const job = s.jobType || '';
+                let total = 0, count = 0;
+                if (Array.isArray(s.answers)) {
+                    s.answers.forEach(a => {
+                        if (a && typeof a.score === 'number') {
+                            total += a.score;
+                            count++;
+                        }
+                    });
+                }
+                const avg = count > 0 ? (total / count).toFixed(2) : '-';
+                // Memnuniyet etiketi
+                let mem = '-';
+                if (avg !== '-') {
+                    const n = parseFloat(avg);
+                    if (n >= 4) mem = 'Çok Memnun';
+                    else if (n >= 3) mem = 'Memnun';
+                    else if (n >= 2) mem = 'Kararsız';
+                    else if (n >= 1) mem = 'Memnun Değil';
+                    else mem = 'Hiç Memnun Değil';
+                }
+                const tarih = s.submittedAt ? new Date(s.submittedAt).toLocaleDateString('tr-TR') : '';
+                tbody.innerHTML += `<tr><td class="px-3 py-2">${name.trim()}</td><td class="px-3 py-2">${job}</td><td class="px-3 py-2 text-center">${avg}</td><td class="px-3 py-2 text-center">${mem}</td><td class="px-3 py-2 text-center">${tarih}</td></tr>`;
+            });
+        }
+        // Katılımcı detaylarını göster/gizle
+        function toggleParticipantDetails() {
+            const details = document.getElementById('participantDetails');
+            if (!details) return;
+            details.classList.toggle('hidden');
+            const btn = document.getElementById('toggleParticipantsBtn');
+            if (btn) {
+                btn.textContent = details.classList.contains('hidden') ? '📋 Katılımcıları Görüntüle' : '👁️ Katılımcıları Gizle';
+            }
+        }
         }
 
         function renderParticipantList(surveys) {
@@ -1396,6 +1440,7 @@
                 if (result.success) {
                     showModal('✅ Başarılı', 'Şirket bilgileri başarıyla güncellendi.');
                     loadCompanyList();
+                    closeModal();
                 } else {
                     showModal('❌ Hata', 'Şirket bilgileri güncellenirken bir hata oluştu. Lütfen tekrar deneyin.');
                 }
