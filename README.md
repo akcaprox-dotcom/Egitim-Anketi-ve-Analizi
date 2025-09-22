@@ -800,51 +800,38 @@
 
 
         async function createCompanyIfNotExists(companyName) {
+            // Firebase ile şirket kontrol/oluşturma
             try {
                 console.log('Şirket kontrol ediliyor:', companyName);
-                
-                if (!systemData.surveyData) {
-                    console.log('Sistem verisi yükleniyor...');
-                    systemData.surveyData = await loadFromJSONBin();
+                // Firebase'den mevcut veriyi çek
+                let snapshot = await firebase.database().ref('surveyData').once('value');
+                let data = snapshot.val();
+                if (!data) {
+                    data = { companies: {}, responses: [], statistics: {} };
                 }
-                
+                systemData.surveyData = data;
                 // Mevcut şirket var mı kontrol et
-                const existingCompany = Object.entries(systemData.surveyData.companies || {})
+                const existingCompany = Object.entries(data.companies || {})
                     .find(([key, company]) => company.name.toLowerCase() === companyName.toLowerCase());
-                
                 if (existingCompany) {
                     console.log('Mevcut şirket bulundu:', existingCompany[1]);
                     return { success: true, key: existingCompany[0], password: existingCompany[1].password };
                 }
-                
                 // Yeni şirket oluştur
                 const companyKey = companyName.toLowerCase().replace(/[^a-z0-9]/g, '').substring(0, 10) + '-' + Date.now();
                 const newPassword = generateCompanyPassword();
-                
-                if (!systemData.surveyData.companies) {
-                    systemData.surveyData.companies = {};
-                }
-                
-                systemData.surveyData.companies[companyKey] = {
+                if (!data.companies) data.companies = {};
+                data.companies[companyKey] = {
                     name: companyName,
                     password: newPassword,
                     createdAt: new Date().toISOString(),
                     totalResponses: 0,
-                    status: 'aktif' // yeni şirketler varsayılan olarak aktif
+                    status: 'aktif'
                 };
-                
-                console.log('Yeni şirket oluşturuldu:', systemData.surveyData.companies[companyKey]);
-                
-                // Şirket bilgilerini kaydet
-                const saveResult = await saveToJSONBin(systemData.surveyData);
-                if (saveResult.success) {
-                    console.log('Şirket başarıyla kaydedildi');
-                    return { success: true, key: companyKey, password: newPassword };
-                } else {
-                    console.error('Şirket kaydetme hatası:', saveResult.error);
-                    return { success: false, error: saveResult.error };
-                }
-                
+                // Firebase'e kaydet
+                await firebase.database().ref('surveyData').set(data);
+                systemData.surveyData = data;
+                return { success: true, key: companyKey, password: newPassword };
             } catch (error) {
                 console.error('Şirket oluşturma hatası:', error);
                 return { success: false, error: error.message };
@@ -863,28 +850,26 @@
         async function submitSurvey() {
             try {
                 console.log('Anket gönderiliyor...');
-                
                 const companyName = document.getElementById('companyName').value.trim();
                 const firstName = document.getElementById('firstName').value.trim() || 'Anonim';
                 const lastName = document.getElementById('lastName').value.trim() || 'Kullanıcı';
-                
                 if (!companyName || !selectedJobType || !answers || answers.length === 0) {
                     throw new Error('Eksik bilgi: Şirket adı, iş türü ve anket yanıtları gerekli');
                 }
-                
                 console.log('Anket verileri:', { companyName, firstName, lastName, selectedJobType, answersCount: answers.length });
-                
                 // Önce şirket oluştur/bul
                 const companyResult = await createCompanyIfNotExists(companyName);
                 console.log('Şirket işlem sonucu:', companyResult);
-                
                 if (!companyResult.success) {
                     throw new Error(`Şirket işlemi başarısız: ${companyResult.error}`);
                 }
-                
-                // Mevcut verileri tekrar yükle (güncel hali için)
-                systemData.surveyData = await loadFromJSONBin();
-                
+                // Firebase'den güncel veriyi çek
+                let snapshot = await firebase.database().ref('surveyData').once('value');
+                let data = snapshot.val();
+                if (!data) {
+                    data = { companies: {}, responses: [], statistics: {} };
+                }
+                systemData.surveyData = data;
                 const surveyResponse = {
                     id: 'survey_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9),
                     companyName: companyName,
@@ -897,75 +882,57 @@
                     averageScore: (answers.reduce((sum, answer) => sum + answer.score, 0) / answers.length).toFixed(2),
                     duration: document.getElementById('timeElapsed').textContent.split(': ')[1] || '00:00'
                 };
-
                 console.log('Anket yanıtı hazırlandı:', surveyResponse);
-                
-                // Yanıtı ekle
-                if (!systemData.surveyData.responses) {
-                    systemData.surveyData.responses = [];
-                }
-                systemData.surveyData.responses.push(surveyResponse);
-                
+                if (!data.responses) data.responses = [];
+                data.responses.push(surveyResponse);
                 // İstatistikleri güncelle
-                if (!systemData.surveyData.statistics) {
-                    systemData.surveyData.statistics = {
+                if (!data.statistics) {
+                    data.statistics = {
                         totalResponses: 0,
                         averageScore: 0,
                         lastUpdated: new Date().toISOString()
                     };
                 }
-                
-                systemData.surveyData.statistics.totalResponses = systemData.surveyData.responses.length;
-                systemData.surveyData.statistics.averageScore = (
-                    systemData.surveyData.responses.reduce((sum, r) => sum + parseFloat(r.averageScore), 0) / 
-                    systemData.surveyData.responses.length
+                data.statistics.totalResponses = data.responses.length;
+                data.statistics.averageScore = (
+                    data.responses.reduce((sum, r) => sum + parseFloat(r.averageScore), 0) / 
+                    data.responses.length
                 ).toFixed(2);
-                systemData.surveyData.statistics.lastUpdated = new Date().toISOString();
-                
+                data.statistics.lastUpdated = new Date().toISOString();
                 // Şirket istatistiklerini güncelle
-                if (companyResult && systemData.surveyData.companies[companyResult.key]) {
-                    systemData.surveyData.companies[companyResult.key].totalResponses = 
-                        systemData.surveyData.responses.filter(r => 
+                if (companyResult && data.companies[companyResult.key]) {
+                    data.companies[companyResult.key].totalResponses = 
+                        data.responses.filter(r => 
                             r.companyName.toLowerCase() === companyName.toLowerCase()
                         ).length;
                 }
-                
-                console.log('Güncellenmiş sistem verisi:', systemData.surveyData);
-                
-                // JSONBin'e kaydet
-                const saveResult = await saveToJSONBin(systemData.surveyData);
-                
-                if (saveResult.success) {
-                    console.log('Anket başarıyla kaydedildi');
-                    
-                    // Başarı mesajı göster
-                    document.getElementById('surveySection').innerHTML = `
-                        <div class="text-center bg-green-50 p-8 rounded-lg border-2 border-green-200">
-                            <div class="text-6xl mb-4">✅</div>
-                            <h2 class="text-2xl font-bold text-green-800 mb-4">Anketiniz Başarıyla Kaydedildi!</h2>
-                            <p class="text-green-700 mb-4">
-                                Değerli görüşleriniz için teşekkür ederiz. Anket yanıtlarınız güvenli bir şekilde JSONBin.io sisteminde saklandı.
+                // Firebase'e kaydet
+                await firebase.database().ref('surveyData').set(data);
+                systemData.surveyData = data;
+                // Başarı mesajı göster
+                document.getElementById('surveySection').innerHTML = `
+                    <div class="text-center bg-green-50 p-8 rounded-lg border-2 border-green-200">
+                        <div class="text-6xl mb-4">✅</div>
+                        <h2 class="text-2xl font-bold text-green-800 mb-4">Anketiniz Başarıyla Kaydedildi!</h2>
+                        <p class="text-green-700 mb-4">
+                            Değerli görüşleriniz için teşekkür ederiz. Anket yanıtlarınız güvenli bir şekilde kaydedildi.
+                        </p>
+                        <div class="bg-blue-50 p-4 rounded-lg border border-blue-200 mb-4">
+                            <p class="text-sm text-blue-700">
+                                <strong>📊 Raporlama Bilgisi:</strong> Anket sonuçlarınız güvenli bir şekilde kaydedildi. 
+                                Şirket yöneticiniz raporları görüntüleyebilir ve analiz edebilir.
                             </p>
-                            <div class="bg-blue-50 p-4 rounded-lg border border-blue-200 mb-4">
-                                <p class="text-sm text-blue-700">
-                                    <strong>📊 Raporlama Bilgisi:</strong> Anket sonuçlarınız güvenli bir şekilde kaydedildi. 
-                                    Şirket yöneticiniz raporları görüntüleyebilir ve analiz edebilir.
-                                </p>
-                            </div>
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-                                <button onclick="showModule('company')" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">
-                                    🏢 Şirket Portalına Git
-                                </button>
-                                <button onclick="location.reload()" class="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors">
-                                    🔄 Yeni Anket Başlat
-                                </button>
-                            </div>
                         </div>
-                    `;
-                } else {
-                    throw new Error(`Anket kaydedilemedi: ${saveResult.error}`);
-                }
-                
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                            <button onclick="showModule('company')" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">
+                                🏢 Şirket Portalına Git
+                            </button>
+                            <button onclick="location.reload()" class="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors">
+                                🔄 Yeni Anket Başlat
+                            </button>
+                        </div>
+                    </div>
+                `;
             } catch (error) {
                 console.error('Anket gönderme hatası:', error);
                 showModal('❌ Hata', `Anket gönderilirken bir hata oluştu:<br><br><strong>Hata:</strong> ${error.message}<br><br>Lütfen sayfayı yenileyip tekrar deneyin.`);
