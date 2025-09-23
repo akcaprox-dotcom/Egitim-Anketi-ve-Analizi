@@ -42,6 +42,44 @@
             .no-print { display: none !important; }
             body { background: white !important; }
         }
+        
+        /* Profesyonel Tablo Stilleri */
+        .survey-table {
+            border-collapse: collapse;
+            width: 100%;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-size: 11px;
+            background: white;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .survey-table th, .survey-table td {
+            border: 1px solid #a3a3a3;
+            padding: 8px 12px;
+            text-align: center;
+        }
+        .survey-table th {
+            background: linear-gradient(to bottom, #f8f9fa 0%, #e9ecef 100%);
+            font-weight: 600;
+            color: #495057;
+            border-bottom: 2px solid #6c757d;
+        }
+        .main-group-row {
+            background: linear-gradient(to bottom, #e3f2fd 0%, #bbdefb 100%);
+            font-weight: 700;
+            color: #1565c0;
+        }
+        .sub-category {
+            background: #f8f9fa;
+            text-align: left !important;
+            font-weight: 500;
+            padding-left: 20px;
+        }
+        .survey-table tbody tr:nth-child(even) {
+            background: #f8f9fa;
+        }
+        .survey-table tbody tr:hover {
+            background: #e3f2fd;
+        }
     </style>
 </head>
 <body class="bg-gray-100 min-h-screen">
@@ -237,9 +275,10 @@
                 <thead>
                     <tr class="bg-gray-100">
                         <th class="px-3 py-2 text-left">İsim Soyisim</th>
-                        <th class="px-3 py-2 text-left">Ünvan</th>
-                        <th class="px-3 py-2 text-center">Yanıt Ortalaması</th>
-                        <th class="px-3 py-2 text-center">Anket Tarihi</th>
+                        <th class="px-3 py-2 text-left">Pozisyon</th>
+                        <th class="px-3 py-2 text-center">Ortalama Puan</th>
+                        <th class="px-3 py-2 text-center">Değerlendirme</th>
+                        <th class="px-3 py-2 text-center">Tarih</th>
                     </tr>
                 </thead>
                 <tbody id="participantListBody">
@@ -252,13 +291,110 @@
 function toggleParticipantList() {
     const wrapper = document.getElementById('participantListTableWrapper');
     const arrow = document.getElementById('participantListArrow');
+    const btn = document.getElementById('toggleParticipantListBtn');
+    
     if (wrapper.classList.contains('hidden')) {
         wrapper.classList.remove('hidden');
         arrow.textContent = '▲';
+        loadParticipantTable();
+        // Buton metnini katılımcı sayısıyla güncelle
+        const participantCount = getParticipantCount();
+        btn.querySelector('span').textContent = `👥 Katılımcı Listesi (${participantCount})`;
     } else {
         wrapper.classList.add('hidden');
         arrow.textContent = '▼';
+        btn.querySelector('span').textContent = '👥 Katılımcı Listesi';
     }
+}
+
+function getParticipantCount() {
+    if (!loggedInCompany || !systemData.surveyData) return 0;
+    
+    // Filtrelenmiş veri varsa onu kullan
+    if (typeof filteredSurveys !== 'undefined' && filteredSurveys !== null) {
+        return filteredSurveys.length;
+    } else {
+        const allResponses = Object.values(systemData.surveyData.responses || {});
+        return allResponses.filter(s => 
+            s.companyName && s.companyName.toLowerCase() === loggedInCompany.name.toLowerCase()
+        ).length;
+    }
+}
+
+function loadParticipantTable() {
+    if (!loggedInCompany || !systemData.surveyData) return;
+    
+    // Eğer tarih filtresi aktifse o verileri kullan, değilse tüm verileri kullan
+    let companySurveys;
+    if (typeof filteredSurveys !== 'undefined' && filteredSurveys !== null) {
+        companySurveys = filteredSurveys;
+    } else {
+        const allResponses = Object.values(systemData.surveyData.responses || {});
+        companySurveys = allResponses.filter(s => 
+            s.companyName && s.companyName.toLowerCase() === loggedInCompany.name.toLowerCase()
+        );
+    }
+    
+    const tbody = document.getElementById('participantListBody');
+    
+    if (companySurveys.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="5" class="text-center py-4 text-gray-500">Henüz katılımcı bulunmuyor.</td></tr>';
+        return;
+    }
+    
+    // Puana göre yüksekten düşüğe sırala
+    const sortedSurveys = [...companySurveys].sort((a, b) => 
+        parseFloat(b.averageScore) - parseFloat(a.averageScore)
+    );
+    
+    tbody.innerHTML = sortedSurveys.map(survey => {
+        const displayName = (survey.firstName && survey.lastName) ? 
+            `${survey.firstName} ${survey.lastName}` : 
+            (survey.firstName || survey.lastName || 'İsimsiz');
+        
+        const avgScore = parseFloat(survey.averageScore);
+        let evaluation = '';
+        let evaluationColor = '';
+        let evaluationIcon = '';
+        
+        if (avgScore >= 4.5) {
+            evaluation = 'Çok Memnun';
+            evaluationColor = 'text-green-600';
+            evaluationIcon = '😄';
+        } else if (avgScore >= 3.5) {
+            evaluation = 'Memnun';
+            evaluationColor = 'text-green-500';
+            evaluationIcon = '😊';
+        } else if (avgScore >= 2.5) {
+            evaluation = 'Orta';
+            evaluationColor = 'text-yellow-600';
+            evaluationIcon = '😐';
+        } else if (avgScore >= 1.5) {
+            evaluation = 'Düşük';
+            evaluationColor = 'text-orange-600';
+            evaluationIcon = '😕';
+        } else {
+            evaluation = 'Çok Düşük';
+            evaluationColor = 'text-red-600';
+            evaluationIcon = '😞';
+        }
+        
+        return `
+            <tr class="hover:bg-gray-50">
+                <td class="px-3 py-2 font-medium">${displayName}</td>
+                <td class="px-3 py-2">
+                    <span class="inline-block px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-800">
+                        ${survey.jobType}
+                    </span>
+                </td>
+                <td class="px-3 py-2 text-center font-semibold">${avgScore.toFixed(1)}</td>
+                <td class="px-3 py-2 text-center ${evaluationColor} font-semibold">
+                    ${evaluationIcon} ${evaluation}
+                </td>
+                <td class="px-3 py-2 text-center text-sm text-gray-600">${new Date(survey.submittedAt).toLocaleDateString('tr-TR')}</td>
+            </tr>
+        `;
+    }).join('');
 }
 </script>
                 </div>
@@ -1081,6 +1217,13 @@ function toggleParticipantList() {
             }
             generateSimpleReport(surveys);
             generateCharts(surveys);
+            
+            // Eğer katılımcı tablosu açıksa onu da güncelle
+            const participantWrapper = document.getElementById('participantListTableWrapper');
+            if (participantWrapper && !participantWrapper.classList.contains('hidden')) {
+                loadParticipantTable();
+            }
+            
             // Katılımcı listesini güncelle (en alt tablo)
             updateParticipantListTable(surveys);
         // Katılımcı listesini güncelleyen fonksiyon (en alt tablo)
@@ -1220,15 +1363,16 @@ function toggleParticipantList() {
                 return [start, end];
             }
 
-            // Frekans tablosu oluştur
-            let table = `<div class="overflow-x-auto"><table class="min-w-full text-xs text-center border border-gray-300 mb-6">
-                <thead>
-                    <tr class="bg-gray-100">
-                        <th class="px-2 py-1">Grup / Soru</th>
-                        ${satisfactionLabels.map(l => `<th class="px-2 py-1">${l}</th>`).join('')}
-                    </tr>
-                </thead>
-                <tbody>`;
+            // Profesyonel frekans tablosu oluştur
+            let table = `<div class="overflow-x-auto mb-6">
+                <table class="survey-table">
+                    <thead>
+                        <tr>
+                            <th style="text-align: left; width: 250px;">Grup / Kategori</th>
+                            ${satisfactionLabels.map(l => `<th style="width: 120px;">${l}</th>`).join('')}
+                        </tr>
+                    </thead>
+                    <tbody>`;
 
             groups.forEach(group => {
                 // Grup genel yüzdeleri
@@ -1242,7 +1386,10 @@ function toggleParticipantList() {
                     });
                 });
                 let groupPercents = groupCounts.map(c => groupTotal ? (c * 100 / groupTotal).toFixed(1) + '%' : '0.0%');
-                table += `<tr class="font-bold bg-gray-50"><td>${group.name}</td>${groupPercents.map(p => `<td>${p}</td>`).join('')}</tr>`;
+                table += `<tr class="main-group-row">
+                    <td style="text-align: left; font-weight: 700;">${group.name}</td>
+                    ${groupPercents.map(p => `<td style="font-weight: 600;">${p}</td>`).join('')}
+                </tr>`;
 
                 // Kategoriler
                 group.categories.forEach((cat, catIdx) => {
@@ -1259,12 +1406,18 @@ function toggleParticipantList() {
                             }
                         }
                     });
-                    // DÜZELTME: Kategori toplamı 0 ise, grup toplamından paylaştır
+                    // Kategori satırı oluştur
                     if (catTotal === 0 && groupTotal > 0) {
-                        // Kategoriye ait sorular yoksa, grup yüzdelerini göster
-                        table += `<tr><td>${cat}</td>${groupCounts.map(c => `<td>${c}</td>`).join('')}</tr>`;
+                        // Kategoriye ait sorular yoksa, grup sayılarını göster
+                        table += `<tr>
+                            <td class="sub-category">${cat}</td>
+                            ${groupCounts.map(c => `<td style="text-align: center;">${c}</td>`).join('')}
+                        </tr>`;
                     } else {
-                        table += `<tr><td>${cat}</td>${catCounts.map(c => `<td>${c}</td>`).join('')}</tr>`;
+                        table += `<tr>
+                            <td class="sub-category">${cat}</td>
+                            ${catCounts.map(c => `<td style="text-align: center;">${c}</td>`).join('')}
+                        </tr>`;
                     }
                 });
             });
@@ -1315,7 +1468,148 @@ function toggleParticipantList() {
                     </p>
                 </div>
             `;
-            document.getElementById('detailedReport').innerHTML = report;
+            
+            // Grafik alanı ekle
+            const totalResponses = surveys.length;
+            const chartTitle = totalResponses > 0 ? 
+                `📊 Grup Bazlı Memnuniyet Dağılımı (${totalResponses} Çalışan)` : 
+                '📊 Grup Bazlı Memnuniyet Dağılımı (Veri Yok)';
+                
+            const chartSection = `
+                <div class="mt-8 bg-white border rounded-lg p-6" style="box-shadow: 0 4px 8px rgba(0,0,0,0.1);">
+                    <h3 class="text-lg font-semibold mb-4 text-gray-800">${chartTitle}</h3>
+                    <div style="width: 100%; height: 400px;">
+                        <canvas id="companyChart"></canvas>
+                    </div>
+                    ${totalResponses === 0 ? 
+                        '<p class="text-gray-500 text-center mt-4">Henüz anket verisi bulunmuyor. Grafik veriler geldiğinde otomatik olarak güncellenecektir.</p>' : 
+                        '<p class="text-gray-600 text-sm text-center mt-4">Grafik tüm gruplardan gelen cevapları birleştirerek genel memnuniyet dağılımını gösterir.</p>'
+                    }
+                </div>
+            `;
+            
+            document.getElementById('detailedReport').innerHTML = report + chartSection;
+            
+            // Grafik oluştur
+            generateCompanyChart(surveys);
+        }
+
+        let companyChartInstance = null;
+
+        function generateCompanyChart(surveys) {
+            try {
+                console.log('generateCompanyChart çalışıyor, survey sayısı:', surveys ? surveys.length : 0);
+                
+                // Önce survey verilerinin yapısını inceleyelim
+                if (surveys && surveys.length > 0) {
+                    console.log('İlk survey örneği:', surveys[0]);
+                }
+                
+                // Mevcut grafiği temizle
+                if (companyChartInstance) {
+                    companyChartInstance.destroy();
+                    companyChartInstance = null;
+                }
+
+                const canvas = document.getElementById('companyChart');
+                if (!canvas) {
+                    console.log('companyChart canvas bulunamadı');
+                    return;
+                }
+
+                // Memnuniyet verilerini hazırla - Basit yaklaşım
+                const satisfactionData = [0, 0, 0, 0, 0]; // [Çok Memnun, Memnun, Kararsız, Memnun Değil, Hiç Memnun Değil]
+
+                // Survey verilerinden memnuniyet hesapla
+                if (surveys && surveys.length > 0) {
+                    console.log('İşletme grafiği için işlenen survey sayısı:', surveys.length);
+                    
+                    // Her survey için ortalama puan üzerinden memnuniyet hesapla
+                    surveys.forEach((survey, surveyIndex) => {
+                        const avgScore = parseFloat(survey.averageScore) || 0;
+                        
+                        if (avgScore > 0) {
+                            // Ortalama puana göre memnuniyet seviyesi belirle
+                            let satisfactionIndex;
+                            if (avgScore >= 4.5) satisfactionIndex = 0; // Çok Memnun
+                            else if (avgScore >= 3.5) satisfactionIndex = 1; // Memnun
+                            else if (avgScore >= 2.5) satisfactionIndex = 2; // Kararsız
+                            else if (avgScore >= 1.5) satisfactionIndex = 3; // Memnun Değil
+                            else satisfactionIndex = 4; // Hiç Memnun Değil
+                            
+                            satisfactionData[satisfactionIndex]++;
+                            
+                            console.log(`Survey ${surveyIndex}: avgScore=${avgScore}, satisfactionIndex=${satisfactionIndex}`);
+                        }
+                    });
+                }
+
+                console.log('İşletme memnuniyet dağılımı:', satisfactionData);
+
+                // Grafik verilerini hazırla
+                const chartData = {
+                    labels: ['Çok Memnun', 'Memnun', 'Kararsız', 'Memnun Değil', 'Hiç Memnun Değil'],
+                    datasets: [{
+                        label: 'İşletme Memnuniyet Dağılımı',
+                        data: satisfactionData,
+                        backgroundColor: [
+                            '#22C55E', // Çok Memnun - Yeşil
+                            '#84CC16', // Memnun - Açık Yeşil  
+                            '#EAB308', // Kararsız - Sarı
+                            '#F97316', // Memnun Değil - Turuncu
+                            '#EF4444'  // Hiç Memnun Değil - Kırmızı
+                        ],
+                        borderColor: [
+                            '#16A34A',
+                            '#65A30D', 
+                            '#CA8A04',
+                            '#EA580C',
+                            '#DC2626'
+                        ],
+                        borderWidth: 2
+                    }]
+                };
+
+                // Grafik ayarları (eğitim anketindeki gibi)
+                const config = {
+                    type: 'bar',
+                    data: chartData,
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                title: {
+                                    display: true,
+                                    text: 'Çalışan Sayısı'
+                                }
+                            }
+                        },
+                        plugins: {
+                            legend: {
+                                display: false
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        const total = satisfactionData.reduce((a, b) => a + b, 0);
+                                        const percentage = total > 0 ? ((context.raw / total) * 100).toFixed(1) : 0;
+                                        return context.dataset.label + ': ' + context.raw + ' (' + percentage + '%)';
+                                    }
+                                }
+                            }
+                        }
+                    }
+                };
+
+                // Grafiği oluştur
+                const ctx = canvas.getContext('2d');
+                companyChartInstance = new Chart(ctx, config);
+                
+            } catch (error) {
+                console.error('İşletme grafiği oluşturma hatası:', error);
+            }
         }
 
         function logoutCompany() {
