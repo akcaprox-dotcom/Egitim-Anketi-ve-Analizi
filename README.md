@@ -884,23 +884,23 @@ function loadParticipantTable() {
                     <div class="grid grid-cols-2 sm:grid-cols-5 gap-2 sm:gap-3 w-full">
                         <button onclick="selectAnswer(1)" class="answer-btn flex flex-col items-center justify-center py-3 px-2 text-xs sm:text-base rounded-xl border-2 border-red-200 hover:border-red-400 hover:bg-red-50 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-red-400 bg-gray-50 shadow-sm">
                             <span class="text-xl sm:text-2xl mb-1 font-bold text-red-500">1</span>
-                            <span class="font-medium text-gray-700 leading-tight text-center">1 - Hiç Memnun<br>Değilim</span>
+                            <span class="font-medium text-gray-700 leading-tight text-center">Hiç Memnun<br>Değilim</span>
                         </button>
                         <button onclick="selectAnswer(2)" class="answer-btn flex flex-col items-center justify-center py-3 px-2 text-xs sm:text-base rounded-xl border-2 border-orange-200 hover:border-orange-400 hover:bg-orange-50 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-orange-400 bg-gray-50 shadow-sm">
                             <span class="text-xl sm:text-2xl mb-1 font-bold text-orange-500">2</span>
-                            <span class="font-medium text-gray-700 leading-tight text-center">2 - Memnun<br>Değilim</span>
+                            <span class="font-medium text-gray-700 leading-tight text-center">Memnun<br>Değilim</span>
                         </button>
                         <button onclick="selectAnswer(3)" class="answer-btn flex flex-col items-center justify-center py-3 px-2 text-xs sm:text-base rounded-xl border-2 border-yellow-200 hover:border-yellow-400 hover:bg-yellow-50 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-yellow-400 bg-gray-50 shadow-sm col-span-2 sm:col-span-1">
                             <span class="text-xl sm:text-2xl mb-1 font-bold text-yellow-600">3</span>
-                            <span class="font-medium text-gray-700 leading-tight text-center">3 - Kararsızım</span>
+                            <span class="font-medium text-gray-700 leading-tight text-center">Kararsızım</span>
                         </button>
                         <button onclick="selectAnswer(4)" class="answer-btn flex flex-col items-center justify-center py-3 px-2 text-xs sm:text-base rounded-xl border-2 border-green-200 hover:border-green-400 hover:bg-green-50 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-green-400 bg-gray-50 shadow-sm">
                             <span class="text-xl sm:text-2xl mb-1 font-bold text-green-500">4</span>
-                            <span class="font-medium text-gray-700 leading-tight text-center">4 - Memnunum</span>
+                            <span class="font-medium text-gray-700 leading-tight text-center">Memnunum</span>
                         </button>
                         <button onclick="selectAnswer(5)" class="answer-btn flex flex-col items-center justify-center py-3 px-2 text-xs sm:text-base rounded-xl border-2 border-blue-200 hover:border-blue-400 hover:bg-blue-50 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-400 bg-gray-50 shadow-sm">
                             <span class="text-xl sm:text-2xl mb-1 font-bold text-blue-500">5</span>
-                            <span class="font-medium text-gray-700 leading-tight text-center">5 - Çok Memnunum</span>
+                            <span class="font-medium text-gray-700 leading-tight text-center">Çok Memnunum</span>
                         </button>
                     </div>
                 </div>
