@@ -360,23 +360,23 @@ function loadParticipantTable() {
         if (avgScore >= 4.5) {
             evaluation = 'Çok Memnun';
             evaluationColor = 'text-green-600';
-            evaluationIcon = '😄';
+            evaluationIcon = '5';
         } else if (avgScore >= 3.5) {
             evaluation = 'Memnun';
             evaluationColor = 'text-green-500';
-            evaluationIcon = '😊';
+            evaluationIcon = '4';
         } else if (avgScore >= 2.5) {
             evaluation = 'Orta';
             evaluationColor = 'text-yellow-600';
-            evaluationIcon = '😐';
+            evaluationIcon = '3';
         } else if (avgScore >= 1.5) {
             evaluation = 'Düşük';
             evaluationColor = 'text-orange-600';
-            evaluationIcon = '😕';
+            evaluationIcon = '2';
         } else {
             evaluation = 'Çok Düşük';
             evaluationColor = 'text-red-600';
-            evaluationIcon = '😞';
+            evaluationIcon = '1';
         }
         
         return `
@@ -389,7 +389,10 @@ function loadParticipantTable() {
                 </td>
                 <td class="px-3 py-2 text-center font-semibold">${avgScore.toFixed(1)}</td>
                 <td class="px-3 py-2 text-center ${evaluationColor} font-semibold">
-                    ${evaluationIcon} ${evaluation}
+                    <span class="inline-flex items-center gap-1">
+                        <span class="inline-block w-6 h-6 rounded-full bg-gray-100 text-gray-700 text-sm font-bold flex items-center justify-center">${evaluationIcon}</span>
+                        ${evaluation}
+                    </span>
                 </td>
                 <td class="px-3 py-2 text-center text-sm text-gray-600">${new Date(survey.submittedAt).toLocaleDateString('tr-TR')}</td>
             </tr>
@@ -680,7 +683,7 @@ function loadParticipantTable() {
                 "Şirketin, yöneticilerin iş-yaşam dengesini destekleyecek bir kültürü var ⚖️",
                 "Toplantı odaları ve ortak alanların kalitesi, verimli toplantılar için yeterli 🏢",
                 "Hibrit/uzaktan çalışma modelinin, yönetici olarak verimliliğimi artırdığını düşünüyorum 🏠",
-                "Çalışma ortamının stres seviyesi, performansımı olumsuz etkilemiyor 😌",
+                "Çalışma ortamının stres seviyesi, performansımı olumsuz etkilemiyor",
                 "İş arkadaşlarım ve ekibimle olan iletişimim açık ve verimli 💬",
                 "Çalışma ortamının yenilikçi fikirleri teşvik ettiğini düşünüyorum 💡",
                 "Ekibimin, işlerini en iyi şekilde yapması için gerekli kaynaklara erişimi var 🛠️",
@@ -880,24 +883,24 @@ function loadParticipantTable() {
                     <h3 class="text-base sm:text-lg font-semibold mb-4 text-gray-800">${question}</h3>
                     <div class="grid grid-cols-2 sm:grid-cols-5 gap-2 sm:gap-3 w-full">
                         <button onclick="selectAnswer(1)" class="answer-btn flex flex-col items-center justify-center py-3 px-2 text-xs sm:text-base rounded-xl border-2 border-red-200 hover:border-red-400 hover:bg-red-50 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-red-400 bg-gray-50 shadow-sm">
-                            <span class="text-xl sm:text-2xl mb-1">😞</span>
-                            <span class="font-medium text-gray-700 leading-tight text-center">Hiç Memnun<br>Değilim</span>
+                            <span class="text-xl sm:text-2xl mb-1 font-bold text-red-500">1</span>
+                            <span class="font-medium text-gray-700 leading-tight text-center">1 - Hiç Memnun<br>Değilim</span>
                         </button>
                         <button onclick="selectAnswer(2)" class="answer-btn flex flex-col items-center justify-center py-3 px-2 text-xs sm:text-base rounded-xl border-2 border-orange-200 hover:border-orange-400 hover:bg-orange-50 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-orange-400 bg-gray-50 shadow-sm">
-                            <span class="text-xl sm:text-2xl mb-1">😐</span>
-                            <span class="font-medium text-gray-700 leading-tight text-center">Memnun<br>Değilim</span>
+                            <span class="text-xl sm:text-2xl mb-1 font-bold text-orange-500">2</span>
+                            <span class="font-medium text-gray-700 leading-tight text-center">2 - Memnun<br>Değilim</span>
                         </button>
                         <button onclick="selectAnswer(3)" class="answer-btn flex flex-col items-center justify-center py-3 px-2 text-xs sm:text-base rounded-xl border-2 border-yellow-200 hover:border-yellow-400 hover:bg-yellow-50 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-yellow-400 bg-gray-50 shadow-sm col-span-2 sm:col-span-1">
-                            <span class="text-xl sm:text-2xl mb-1">😊</span>
-                            <span class="font-medium text-gray-700 leading-tight text-center">Kararsızım</span>
+                            <span class="text-xl sm:text-2xl mb-1 font-bold text-yellow-600">3</span>
+                            <span class="font-medium text-gray-700 leading-tight text-center">3 - Kararsızım</span>
                         </button>
                         <button onclick="selectAnswer(4)" class="answer-btn flex flex-col items-center justify-center py-3 px-2 text-xs sm:text-base rounded-xl border-2 border-green-200 hover:border-green-400 hover:bg-green-50 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-green-400 bg-gray-50 shadow-sm">
-                            <span class="text-xl sm:text-2xl mb-1">😄</span>
-                            <span class="font-medium text-gray-700 leading-tight text-center">Memnunum</span>
+                            <span class="text-xl sm:text-2xl mb-1 font-bold text-green-500">4</span>
+                            <span class="font-medium text-gray-700 leading-tight text-center">4 - Memnunum</span>
                         </button>
                         <button onclick="selectAnswer(5)" class="answer-btn flex flex-col items-center justify-center py-3 px-2 text-xs sm:text-base rounded-xl border-2 border-blue-200 hover:border-blue-400 hover:bg-blue-50 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-400 bg-gray-50 shadow-sm">
-                            <span class="text-xl sm:text-2xl mb-1">🤩</span>
-                            <span class="font-medium text-gray-700 leading-tight text-center">Çok Memnunum</span>
+                            <span class="text-xl sm:text-2xl mb-1 font-bold text-blue-500">5</span>
+                            <span class="font-medium text-gray-700 leading-tight text-center">5 - Çok Memnunum</span>
                         </button>
                     </div>
                 </div>
@@ -1346,7 +1349,7 @@ function loadParticipantTable() {
                     ]
                 }
             ];
-            const satisfactionLabels = ['Çok Memnunum', 'Memnun', 'Kararsızım', 'Memnun Değilim', 'Hiç Memnun Değilim'];
+            const satisfactionLabels = ['5 - Çok Memnunum', '4 - Memnunum', '3 - Kararsızım', '2 - Memnun Değilim', '1 - Hiç Memnun Değilim'];
 
             // Soru index aralıkları (örnek, gerçek indexler soru setine göre ayarlanmalı)
             const groupRanges = {
@@ -1548,7 +1551,7 @@ function loadParticipantTable() {
 
                 // Grafik verilerini hazırla
                 const chartData = {
-                    labels: ['Çok Memnun', 'Memnun', 'Kararsız', 'Memnun Değil', 'Hiç Memnun Değil'],
+                    labels: ['5 - Çok Memnun', '4 - Memnun', '3 - Kararsız', '2 - Memnun Değil', '1 - Hiç Memnun Değil'],
                     datasets: [{
                         label: 'İşletme Memnuniyet Dağılımı',
                         data: satisfactionData,
@@ -1849,7 +1852,7 @@ function loadParticipantTable() {
                 window._charts.satisfactionChart = new Chart(satisfactionChartCtx, {
                     type: 'bar',
                     data: {
-                        labels: ['Hiç Memnun Değilim', 'Memnun Değilim', 'Kararsızım', 'Memnunum', 'Çok Memnunum'],
+                        labels: ['1 - Hiç Memnun Değilim', '2 - Memnun Değilim', '3 - Kararsızım', '4 - Memnunum', '5 - Çok Memnunum'],
                         datasets: [{
                             label: 'Memnuniyet Dağılımı',
                             data: satisfactionData,
