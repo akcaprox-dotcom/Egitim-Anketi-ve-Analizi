@@ -1349,7 +1349,7 @@ function loadParticipantTable() {
                     ]
                 }
             ];
-            const satisfactionLabels = ['5 - Çok Memnunum', '4 - Memnunum', '3 - Kararsızım', '2 - Memnun Değilim', '1 - Hiç Memnun Değilim'];
+            const satisfactionLabels = ['Çok Memnunum', 'Memnunum', 'Kararsızım', 'Memnun Değilim', 'Hiç Memnun Değilim'];
 
             // Soru index aralıkları (örnek, gerçek indexler soru setine göre ayarlanmalı)
             const groupRanges = {
@@ -1551,7 +1551,7 @@ function loadParticipantTable() {
 
                 // Grafik verilerini hazırla
                 const chartData = {
-                    labels: ['5 - Çok Memnun', '4 - Memnun', '3 - Kararsız', '2 - Memnun Değil', '1 - Hiç Memnun Değil'],
+                    labels: ['Çok Memnun', 'Memnun', 'Kararsız', 'Memnun Değil', 'Hiç Memnun Değil'],
                     datasets: [{
                         label: 'İşletme Memnuniyet Dağılımı',
                         data: satisfactionData,
@@ -1852,7 +1852,7 @@ function loadParticipantTable() {
                 window._charts.satisfactionChart = new Chart(satisfactionChartCtx, {
                     type: 'bar',
                     data: {
-                        labels: ['1 - Hiç Memnun Değilim', '2 - Memnun Değilim', '3 - Kararsızım', '4 - Memnunum', '5 - Çok Memnunum'],
+                        labels: ['Hiç Memnun Değilim', 'Memnun Değilim', 'Kararsızım', 'Memnunum', 'Çok Memnunum'],
                         datasets: [{
                             label: 'Memnuniyet Dağılımı',
                             data: satisfactionData,
