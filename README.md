@@ -1492,6 +1492,54 @@ function loadParticipantTable() {
             `;
             
             document.getElementById('detailedReport').innerHTML = report + chartSection;
+            // AI ile Yorumla butonu ve API key inputu ekle
+            document.getElementById('detailedReport').innerHTML += `
+                <div class="mt-6 flex flex-col md:flex-row gap-2 items-center justify-center">
+                    <button id="aiInterpretBtn" class="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-4 py-2 rounded font-semibold text-xs hover:from-blue-700 hover:to-purple-700 transition-colors">
+                        🤖 Ananliz Pro X AI ile Yorumla
+                    </button>
+                </div>
+                <div id="aiInterpretationModal" class="modal">
+                  <div class="modal-content max-w-2xl" style="margin: 5% auto; padding: 30px; border-radius: 15px;">
+                    <div class="modal-header flex justify-between items-center mb-4">
+                      <h2 class="text-lg font-bold">AI Yorum & Analiz</h2>
+                      <span class="close cursor-pointer text-2xl" onclick="document.getElementById('aiInterpretationModal').classList.remove('show')">&times;</span>
+                    </div>
+                    <div id="aiInterpretationContent" class="text-sm text-gray-800 whitespace-pre-line"></div>
+                  </div>
+                </div>
+            `;
+            // Buton eventini ekle
+            setTimeout(() => {
+                const btn = document.getElementById('aiInterpretBtn');
+                if (btn) btn.onclick = async function() {
+                    const apiKey = 'AIzaSyCJXufO8b2AMWRZpw-QctHSWgWSg2j8L1Y';
+                    btn.disabled = true;
+                    btn.textContent = 'AI analiz yapıyor...';
+                    try {
+                        // Anket özetini ve gruplama verilerini hazırla
+                        const summary = document.getElementById('detailedReport').innerText.slice(0, 2000);
+                        const prompt = `Bir insan kaynakları uzmanı gibi aşağıdaki anket raporunu analiz et.\n\nRapor Özeti:\n${summary}\n\nAşağıdaki başlıklarla detaylı, profesyonel ve uygulanabilir bir analiz yaz:\n\n1. Mevcut Durum\n2. Ne Yapılmalı\n3. Böyle Giderse Ne Olur\n\nHer başlık için en az 3-4 cümlelik, özgün ve açıklayıcı bir metin oluştur.\n`;
+                        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${apiKey}`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                contents: [{ parts: [{ text: prompt }] }]
+                            })
+                        });
+                        if (!response.ok) throw new Error('API Hatası: ' + response.status);
+                        const result = await response.json();
+                        let text = (result.candidates && result.candidates[0] && result.candidates[0].content && result.candidates[0].content.parts[0].text) || 'AI yanıtı alınamadı.';
+                        document.getElementById('aiInterpretationContent').textContent = text;
+                        document.getElementById('aiInterpretationModal').classList.add('show');
+                    } catch (e) {
+                        alert('AI yorumlama hatası: ' + e.message);
+                    } finally {
+                        btn.disabled = false;
+                        btn.textContent = '🤖 AI ile Yorumla';
+                    }
+                }
+            }, 500);
             
             // Grafik oluştur
             generateCompanyChart(surveys);
