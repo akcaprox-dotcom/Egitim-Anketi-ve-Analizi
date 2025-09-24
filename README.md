@@ -1,3 +1,4 @@
+ const response = await fetch(`https://generativelanguage.googleapis.com/v1/models/gemini-pro:generateContent?key=${apiKey}`, {
 <!DOCTYPE html>
 <html lang="tr">
 <head>
