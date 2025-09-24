@@ -478,6 +478,17 @@ function loadParticipantTable() {
         </div>
     </div>
 
+    <!-- AI Interpretation Modal -->
+    <div id="aiInterpretationModal" class="modal">
+      <div class="modal-content max-w-4xl bg-white shadow-2xl" style="margin: 3% auto; padding: 30px; border-radius: 15px; max-height: 80vh; overflow-y: auto;">
+        <div class="modal-header flex justify-between items-center mb-4 border-b pb-3">
+          <h2 class="text-xl font-bold text-gray-800">🤖 AI Yorum & Analiz</h2>
+          <span class="close cursor-pointer text-3xl text-gray-500 hover:text-gray-700" onclick="document.getElementById('aiInterpretationModal').classList.remove('show')">&times;</span>
+        </div>
+        <div id="aiInterpretationContent" class="text-base text-gray-800 leading-7 whitespace-pre-line"></div>
+      </div>
+    </div>
+
     <script>
         // Firebase config
         const firebaseConfig = {
@@ -1570,7 +1581,7 @@ function loadParticipantTable() {
                                 <meta charset="UTF-8">
                                 <meta name="viewport" content="width=device-width, initial-scale=1.0">
                                 <title>AI Analiz Sonuçları</title>
-                                <script src="https://cdn.tailwindcss.com"></script>
+                                <scr` + `ipt src="https://cdn.tailwindcss.com"></scr` + `ipt>
                             </head>
                             <body class="bg-gray-100 p-6">
                                 <div class="max-w-4xl mx-auto">
@@ -2104,14 +2115,5 @@ function loadParticipantTable() {
                 });
             }
     </script>
-    <div id="aiInterpretationModal" class="modal">
-      <div class="modal-content max-w-4xl bg-white shadow-2xl" style="margin: 3% auto; padding: 30px; border-radius: 15px; max-height: 80vh; overflow-y: auto;">
-        <div class="modal-header flex justify-between items-center mb-4 border-b pb-3">
-          <h2 class="text-xl font-bold text-gray-800">🤖 AI Yorum & Analiz</h2>
-          <span class="close cursor-pointer text-3xl text-gray-500 hover:text-gray-700" onclick="document.getElementById('aiInterpretationModal').classList.remove('show')">&times;</span>
-        </div>
-        <div id="aiInterpretationContent" class="text-base text-gray-800 leading-7 whitespace-pre-line"></div>
-      </div>
-    </div>
 </body>
 </html>
