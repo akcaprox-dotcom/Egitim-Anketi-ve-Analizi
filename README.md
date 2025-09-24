@@ -1521,7 +1521,7 @@ function loadParticipantTable() {
                         // Anket özetini ve gruplama verilerini hazırla
                         const summary = document.getElementById('detailedReport').innerText.slice(0, 2000);
                         const prompt = `Bir insan kaynakları uzmanı gibi aşağıdaki anket raporunu analiz et.\n\nRapor Özeti:\n${summary}\n\nAşağıdaki başlıklarla detaylı, profesyonel ve uygulanabilir bir analiz yaz:\n\n1. Mevcut Durum\n2. Ne Yapılmalı\n3. Böyle Giderse Ne Olur\n\nHer başlık için en az 3-4 cümlelik, özgün ve açıklayıcı bir metin oluştur.\n`;
-                        const response = await fetch(`https://generativelanguage.googleapis.com/v1/models/gemini-pro:generateContent?key=${apiKey}`, {
+                        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify({
