@@ -480,12 +480,12 @@ function loadParticipantTable() {
 
     <!-- AI Interpretation Modal -->
     <div id="aiInterpretationModal" class="modal">
-      <div class="modal-content max-w-4xl bg-white shadow-2xl" style="margin: 3% auto; padding: 30px; border-radius: 15px; max-height: 80vh; overflow-y: auto;">
-        <div class="modal-header flex justify-between items-center mb-4 border-b pb-3">
-          <h2 class="text-xl font-bold text-gray-800">🤖 AI Yorum & Analiz</h2>
-          <span class="close cursor-pointer text-3xl text-gray-500 hover:text-gray-700" onclick="document.getElementById('aiInterpretationModal').classList.remove('show')">&times;</span>
+      <div class="modal-content max-w-7xl bg-white shadow-2xl" style="margin: 2% auto; padding: 40px; border-radius: 20px; max-height: 90vh; overflow-y: auto; width: 95vw;">
+        <div class="modal-header flex justify-between items-center mb-6 border-b pb-4">
+          <h2 class="text-2xl font-bold text-gray-800">🤖 AI Yorum & Analiz</h2>
+          <span class="close cursor-pointer text-4xl text-gray-500 hover:text-gray-700" onclick="document.getElementById('aiInterpretationModal').classList.remove('show')">&times;</span>
         </div>
-        <div id="aiInterpretationContent" class="text-base text-gray-800 leading-7 whitespace-pre-line"></div>
+        <div id="aiInterpretationContent" class="text-lg text-gray-800 leading-8 whitespace-pre-line"></div>
       </div>
     </div>
 
@@ -1506,11 +1506,8 @@ function loadParticipantTable() {
             // AI ile Yorumla butonu ve API key inputu ekle
             document.getElementById('detailedReport').innerHTML += `
                 <div class="mt-6 flex flex-col md:flex-row gap-2 items-center justify-center">
-                    <button id="aiInterpretBtn" class="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-4 py-2 rounded font-semibold text-xs hover:from-blue-700 hover:to-purple-700 transition-colors">
+                    <button id="aiInterpretBtn" class="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-3 rounded-lg font-bold text-sm hover:from-blue-700 hover:to-purple-700 transition-all duration-300 transform hover:scale-105 shadow-lg">
                         🤖 Ananliz Pro X AI ile Yorumla
-                    </button>
-                    <button id="aiInterpretNewPageBtn" class="bg-gradient-to-r from-green-600 to-blue-600 text-white px-4 py-2 rounded font-semibold text-xs hover:from-green-700 hover:to-blue-700 transition-colors">
-                        📄 Yeni Sayfada Aç
                     </button>
                 </div>
             `;
@@ -1545,71 +1542,6 @@ function loadParticipantTable() {
                     } finally {
                         btn.disabled = false;
                         btn.textContent = '🤖 AI ile Yorumla';
-                    }
-                }
-
-                // Yeni sayfada aç butonu event handler
-                const newPageBtn = document.getElementById('aiInterpretNewPageBtn');
-                if (newPageBtn) newPageBtn.onclick = async function() {
-                    const apiKey = 'AIzaSyCJXufO8b2AMWRZpw-QctHSWgWSg2j8L1Y';
-                    newPageBtn.disabled = true;
-                    newPageBtn.textContent = '🔄 AI analiz yapıyor...';
-                    try {
-                        // Anket özetini ve gruplama verilerini hazırla
-                        const summary = document.getElementById('detailedReport').innerText.slice(0, 2000);
-                        const prompt = `Bir insan kaynakları uzmanı gibi aşağıdaki anket raporunu analiz et.\n\nRapor Özeti:\n${summary}\n\nAşağıdaki başlıklarla detaylı, profesyonel ve uygulanabilir bir analiz yaz:\n\n1. Mevcut Durum\n2. Ne Yapılmalı\n3. Böyle Giderse Ne Olur\n\nHer başlık için en az 3-4 cümlelik, özgün ve açıklayıcı bir metin oluştur.\n`;
-                        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent`, {
-                            method: 'POST',
-                            headers: { 
-                                'Content-Type': 'application/json',
-                                'x-goog-api-key': apiKey
-                            },
-                            body: JSON.stringify({
-                                contents: [{ parts: [{ text: prompt }] }]
-                            })
-                        });
-                        if (!response.ok) throw new Error('API Hatası: ' + response.status);
-                        const result = await response.json();
-                        let text = (result.candidates && result.candidates[0] && result.candidates[0].content && result.candidates[0].content.parts[0].text) || 'AI yanıtı alınamadı.';
-                        
-                        // Yeni sayfada aç
-                        const newWindow = window.open('', '_blank', 'width=1000,height=800');
-                        newWindow.document.write(`
-                            <!DOCTYPE html>
-                            <html lang="tr">
-                            <head>
-                                <meta charset="UTF-8">
-                                <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                                <title>AI Analiz Sonuçları</title>
-                                <scr` + `ipt src="https://cdn.tailwindcss.com"></scr` + `ipt>
-                            </head>
-                            <body class="bg-gray-100 p-6">
-                                <div class="max-w-4xl mx-auto">
-                                    <div class="bg-white rounded-lg shadow-lg p-6">
-                                        <h1 class="text-2xl font-bold text-center mb-6 text-blue-600">🤖 AI Analiz Sonuçları</h1>
-                                        <div class="prose max-w-none">
-                                            <pre class="whitespace-pre-wrap bg-gray-50 p-4 rounded text-sm">${text}</pre>
-                                        </div>
-                                        <div class="text-center mt-6">
-                                            <button onclick="window.print()" class="bg-blue-500 hover:bg-blue-700 text-white px-4 py-2 rounded mr-2">
-                                                🖨️ Yazdır
-                                            </button>
-                                            <button onclick="window.close()" class="bg-gray-500 hover:bg-gray-700 text-white px-4 py-2 rounded">
-                                                ❌ Kapat
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
-                            </body>
-                            </html>
-                        `);
-                        newWindow.document.close();
-                        
-                    } catch (e) {
-                        alert('AI yorumlama hatası: ' + e.message);
-                    } finally {
-                        newPageBtn.disabled = false;
-                        newPageBtn.textContent = '📄 Yeni Sayfada Aç';
                     }
                 }
             }, 500);
