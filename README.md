@@ -1500,15 +1500,6 @@ function loadParticipantTable() {
                         🤖 Ananliz Pro X AI ile Yorumla
                     </button>
                 </div>
-                <div id="aiInterpretationModal" class="modal">
-                  <div class="modal-content max-w-2xl" style="margin: 5% auto; padding: 30px; border-radius: 15px;">
-                    <div class="modal-header flex justify-between items-center mb-4">
-                      <h2 class="text-lg font-bold">AI Yorum & Analiz</h2>
-                      <span class="close cursor-pointer text-2xl" onclick="document.getElementById('aiInterpretationModal').classList.remove('show')">&times;</span>
-                    </div>
-                    <div id="aiInterpretationContent" class="text-sm text-gray-800 whitespace-pre-line"></div>
-                  </div>
-                </div>
             `;
             // Buton eventini ekle
             setTimeout(() => {
@@ -2046,5 +2037,14 @@ function loadParticipantTable() {
                 });
             }
     </script>
+    <div id="aiInterpretationModal" class="modal">
+      <div class="modal-content max-w-2xl bg-white" style="margin: 5% auto; padding: 30px; border-radius: 15px;">
+        <div class="modal-header flex justify-between items-center mb-4">
+          <h2 class="text-lg font-bold text-gray-800">AI Yorum & Analiz</h2>
+          <span class="close cursor-pointer text-2xl" onclick="document.getElementById('aiInterpretationModal').classList.remove('show')">&times;</span>
+        </div>
+        <div id="aiInterpretationContent" class="text-sm text-gray-800 whitespace-pre-line"></div>
+      </div>
+    </div>
 </body>
 </html>
