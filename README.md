@@ -1753,7 +1753,7 @@ function loadParticipantTable() {
             setTimeout(() => {
                 const btn = document.getElementById('aiInterpretBtn');
                 if (btn) btn.onclick = async function() {
-                    const apiKey = 'AIzaSyCJXufO8b2AMWRZpw-QctHSWgWSg2j8L1Y';
+                    const apiKey = 'AIzaSyByzM5oUjl8a8K8CvGV5e9o08Se_3FABI0';
                     btn.disabled = true;
                     btn.textContent = 'AI analiz yapıyor...';
                     try {
