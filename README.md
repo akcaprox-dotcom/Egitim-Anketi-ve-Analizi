@@ -566,187 +566,217 @@ function loadParticipantTable() {
         // Soru setleri
         const questions = {
             "Mavi Yaka": [
-                // Çalışma Ortamı & Konfor (10 Soru)
-                "Çalışma alanımın temiz ve düzenli olduğunu düşünüyorum 🏭",
-                "İşimi yapmam için gerekli tüm alet ve ekipmanlar yeterli ve güvenli ⚙️",
-                "İş yerindeki havalandırma, aydınlatma ve ısınma koşulları yeterli 🌡️",
-                "Soyunma odaları ve tuvaletler gibi sosyal alanların hijyeninden memnunum 🚿",
-                "İş kıyafetlerinin rahat ve iş güvenliği standartlarına uygun olduğunu düşünüyorum 👕",
-                "İşyerindeki gürültü seviyesi, çalışmamı olumsuz etkilemiyor 🔇",
-                "Çalışma saatlerimin yorucu olduğunu düşünmüyorum ⏰",
-                "Dinlenme molalarının yeterli uzunlukta olduğunu düşünüyorum ☕",
-                "Çalışma ortamında kendimi fiziksel olarak güvende hissediyorum 🛡️",
-                "İşyerindeki revir veya ilk yardım imkanları yeterli 🏥",
+                // İş Güvenliği ve Çevre (5 Soru)
+                "Çalıştığım alanda kullanılan koruyucu ekipmanlar (KKD) yeterli kalitede ve düzenli olarak sağlanmaktadır.",
+                "İş kazası riski taşıyan durumlar için uygulanan güvenlik prosedürlerini net olarak biliyorum.",
+                "Tehlikeli durumları veya riskleri bildirdiğimde, hızlı ve etkili bir aksiyon alınır.",
+                "Fabrikanın çevreye duyarlı uygulamaları (atık yönetimi, enerji kullanımı) konusunda bilgilendiriliyorum.",
+                "Makine ve teçhizatların acil durdurma mekanizmaları kolay erişilebilir durumdadır.",
                 
-                // Yemek & Sosyal Haklar (10 Soru)
-                "Şirket yemeklerinin kalitesi ve çeşitliliğinden memnunum 🍽️",
-                "Yemek saatlerinin yeterli olduğunu düşünüyorum ⏱️",
-                "Sağlanan servis veya ulaşım imkanları ihtiyaçlarımı karşılıyor 🚌",
-                "Aldığım maaş, harcadığım emeğe göre adil 💰",
-                "Şirket tarafından sunulan sosyal haklar (ikramiye, yardım vb.) yeterli 🎁",
-                "Yemeklerin porsiyonları doyurucu 🥘",
-                "Servis şoförlerinin tutum ve davranışları saygılı 🚐",
-                "İş yerindeki sosyal etkinliklerin sayısı ve kalitesi yeterli 🎉",
-                "Fazla mesai ücretlerinin adil bir şekilde ödendiğini düşünüyorum ⏳",
-                "İşyeri yemekhane personelinin tutum ve davranışları nazik ve saygılı 👨‍🍳",
+                // Üretim Verimliliği ve Süreçler (5 Soru)
+                "Üretim hattındaki iş akışı, gereksiz bekleme ve hareketleri önleyecek şekilde düzenlenmiştir.",
+                "Günlük üretim hedeflerimin ne olduğunu ve bu hedeflere ulaşma durumumu biliyorum.",
+                "Üretim sırasında karşılaştığım küçük sorunları/arızaları kendi yetkimle çözebilirim.",
+                "Üretimi aksatan sık tekrarlanan darboğazları (bottleneck) net olarak belirleyebiliyorum.",
+                "İşimi yaparken kullandığım talimatlar ve prosedürler anlaşılır ve günceldir.",
                 
-                // İş İlişkileri & Güven (10 Soru)
-                "Yöneticim, işimi doğru yapmam için bana yeterli geri bildirim veriyor 👥",
-                "Yöneticim, sorunlarım olduğunda bana destek oluyor 🤝",
-                "İş arkadaşlarımla güçlü bir iş birliği içindeyiz 👫",
-                "Yöneticim ve üst yönetimden gelen bilgiler açık ve anlaşılır 📢",
-                "Şirketin hedefleri hakkında yeterince bilgilendiriliyorum 🎯",
-                "İş yerinde kendimi rahatça ifade edebiliyorum 💬",
-                "Yöneticimin kararlarının adil ve eşitlikçi olduğunu düşünüyorum ⚖️",
-                "Şirket yönetimine güveniyorum 🤝",
-                "Sorunlarım veya şikayetlerim olduğunda, yetkililere ulaşmak kolay 📞",
-                "Yöneticim, iyi yaptığım işleri takdir ediyor 👏",
+                // Makine/Ekipman Bakımı ve Teknoloji (5 Soru)
+                "Kullandığım makinelerin/ekipmanların periyodik bakımları zamanında yapılmaktadır.",
+                "Üretim sırasında kullandığım el aletleri ve yardımcı ekipmanlar kaliteli ve sağlamdır.",
+                "Bir makine arızası meydana geldiğinde, teknik servis ekibi hızla müdahale etmektedir.",
+                "İşimi yaparken kullanılan otomasyon/dijital sistemler, işimi kolaylaştırmaktadır.",
+                "Bakım veya onarım süreçlerine görüş ve önerilerimle katkı sağlayabiliyorum.",
                 
-                // Sadakat & Gelecek (10 Soru)
-                "Şirkete karşı güçlü bir sadakat hissediyorum ❤️",
-                "Gelecek 2 yıl içinde bu şirkette çalışmaya devam etmeyi düşünüyorum 📅",
-                "Şirketin geleceğinin parlak olduğunu düşünüyorum ✨",
-                "Şirketin misyon ve vizyonu bana ilham veriyor 🌟",
-                "İşimin, şirket başarısına önemli katkı sağladığını hissediyorum 🏆",
-                "Şirket, beni daha iyi bir çalışan olmam için teşvik ediyor 📈",
-                "Şirketteki pozisyonumda kariyer gelişimi için fırsatlar görüyorum 🚀",
-                "Şirketin sunduğu eğitimler, kendimi geliştirmem için yeterli 📚",
-                "Şirketteki performansımın adil bir şekilde değerlendirildiğini düşünüyorum 📊",
-                "Şirketteki kariyer yolumun belirsiz olduğunu düşünmüyorum 🛤️",
+                // Kalite Yönetimi ve Kontrol (5 Soru)
+                "Ürettiğim parçanın/ürünün kalite standartları ve beklentileri bana net olarak aktarılmıştır.",
+                "Kalitesiz ürün/parça üretmemize neden olan temel hataları biliyorum ve önleyebilirim.",
+                "Ürün/parça üzerinde yaptığım kalite kontrol testleri için doğru ekipmanlara sahibim.",
+                "Bir kalite sorunu tespit ettiğimde, üretim hattını durdurma veya ürünü ayırma yetkim vardır.",
+                "Kalite yönetim sistemi eğitimleri pratik uygulamalarla desteklenmektedir.",
                 
-                // Dijital Dönüşüm İsteği & Yenilenme (10 Soru)
-                "İşimi daha kolay hale getirecek yeni teknolojilere veya araçlara açığım 💻",
-                "Şirketin, iş süreçlerini dijitalleştirmesini destekliyorum 🔄",
-                "Yeni teknolojileri öğrenmeye ve kendimi geliştirmeye istekliyim 🎓",
-                "İşimizde kullanılan mevcut teknolojik araçlar (makine, yazılım vb.) yeterli ve güncel 🔧",
-                "Şirketin yeniliklere açık bir kültürü olduğunu düşünüyorum 💡",
-                "Şirket, iş süreçlerindeki verimliliği artırmak için dijital çözümleri kullanıyor ⚡",
-                "Yeni teknolojik araçların kullanımına dair yeterli eğitim alıyorum 📖",
-                "İşimizde dijitalleşmenin bize zaman kazandıracağını düşünüyorum ⏰",
-                "Teknolojik gelişmelerin işimi daha güvenli hale getireceğine inanıyorum 🛡️",
-                "Şirketin, dijital geleceğe hazırlandığını düşünüyorum 🚀"
+                // Eğitim ve Gelişim (5 Soru)
+                "İşe başladığımda aldığım oryantasyon ve işbaşı eğitimi yeterliydi.",
+                "Yeni bir makine/teknoloji geldiğinde, onunla ilgili detaylı eğitim alıyorum.",
+                "Geliştirmek istediğim beceriler için yönetime eğitim talebinde bulunabiliyorum.",
+                "Yöneticim/Amirim, kariyer hedeflerim konusunda benimle düzenli olarak konuşur.",
+                "Aldığım eğitimlerin üretimdeki verimime doğrudan katkı sağladığını düşünüyorum.",
+                
+                // İletişim ve İşbirliği (5 Soru)
+                "Amirimden günlük iş talimatlarını net ve anlaşılır şekilde alıyorum.",
+                "Diğer üretim hatları/departmanlarla (lojistik, kalite vb.) iletişimimiz sorunsuz ilerlemektedir.",
+                "Departman toplantıları, işleyişteki sorunları açıkça tartışmak için uygun bir ortam sunmaktadır.",
+                "Yönetimin aldığı önemli kararlar bize zamanında bildirilir.",
+                "Yaptığım iş hakkında düzenli geri bildirim alıyorum.",
+                
+                // Çalışma Koşulları ve Sosyal Haklar (5 Soru)
+                "Çalıştığım alandaki aydınlatma, havalandırma ve sıcaklık koşulları yeterlidir.",
+                "Fabrikanın yemekhane hizmetlerinden ve yemek kalitesinden memnunum.",
+                "Dinlenme ve sosyal alanlarımız (soyma odası, mola alanı vb.) temiz ve yeterli konfordadır.",
+                "Aldığım ücret ve sosyal haklar, yaptığım işin sorumluluğu ile doğru orantılıdır.",
+                "Yöneticilerim, özel ve acil durumlarımda bana destek olmaktadır.",
+                
+                // İş Yükü ve Zaman Yönetimi (5 Soru)
+                "Günlük iş yüküm dengeli ve yönetilebilir bir seviyededir.",
+                "Yapılan fazla mesai (overtime) planlamaları adil ve gerekli durumlarda yapılmaktadır.",
+                "Üretimdeki aksaklıklar ve arızalar, iş saatlerimi sürekli uzatmama neden olmamaktadır.",
+                "İşimi zamanında bitirmem için gerekli ekip ve kaynak desteğine sahibim.",
+                "Vardiya/izin planlamaları adil ve kişisel ihtiyaçlarım dikkate alınarak yapılmaktadır.",
+                
+                // Liderlik ve Yönetim (5 Soru)
+                "Amirim/Süpervizörüm, işimi yapmam için bana yeterli özerklik ve güven vermektedir.",
+                "Yöneticim, performansımı adil ve objektif kriterlere göre değerlendirmektedir.",
+                "Yöneticim, ekip içinde iyi bir atmosfer yaratılmasına katkı sağlamaktadır.",
+                "Yönetimin çalışanların sorunlarına gerçekten önem verdiğini düşünüyorum.",
+                "Yöneticilerimiz, bizi dinler ve fikirlerimize saygı gösterir.",
+                
+                // Kurumsal Bağlılık ve Motivasyon (5 Soru)
+                "Fabrikamızın pazardaki yeri ve geleceği hakkında iyimserim.",
+                "Fabrikada yapılan sosyal aktivitelere ve etkinliklere katılmak beni motive ediyor.",
+                "Yaptığım işin firmanın genel başarısına ne kadar katkı sağladığını net olarak görüyorum.",
+                "Fabrikamızda uzun vadeli çalışmayı teşvik eden bir ortam vardır.",
+                "Fabrikanın misyonunu ve değerlerini benimsiyorum ve işimi buna uygun yapıyorum."
             ],
             "Beyaz Yaka": [
-                // Çalışma Ortamı & Konfor (10 Soru)
-                "Çalışma alanımın (ofis, masa vb.) ergonomisi ve konforu yeterli 🪑",
-                "İşimi yapmak için gerekli teknolojik donanıma (bilgisayar, yazılım vb.) sahibim 💻",
-                "İş yerindeki havalandırma, aydınlatma ve ısınma koşulları yeterli 🌡️",
-                "Toplantı odaları ve ortak alanların temizliği ve kullanışlılığından memnunum 🏢",
-                "Esnek çalışma saatlerinin (hibrit/uzaktan) üretkenliğimi artırdığını düşünüyorum ⏰",
-                "İş yerindeki gürültü seviyesi, odaklanmamı engellemiyor 🔇",
-                "Çalışma saatlerimin iş-yaşam dengeme uygun olduğunu düşünüyorum ⚖️",
-                "Dinlenme odaları veya kafeterya gibi sosyal alanların kalitesi yeterli ☕",
-                "İş arkadaşlarımla iyi ve uyumlu bir iletişim kurabiliyorum 👥",
-                "Çalışma ortamında kendimi güvende hissediyorum 🛡️",
+                // İş Güvenliği ve Çevre (5 Soru)
+                "Ofis ve ortak alanlarda ergonomi ve iş güvenliği standartları (kablo düzeni, sandalye vb.) sağlanmıştır.",
+                "Kendi alanımla ilgili çevre mevzuatına uyum konusunda yeterli bilgiye sahibim.",
+                "Yangın ve acil durumlar için tahliye planları net ve düzenli olarak tatbikatı yapılmaktadır.",
+                "Ofis ortamında stres yönetimi ve ruh sağlığı konularında destek programları mevcuttur.",
+                "Fabrikanın sürdürülebilirlik hedeflerine ulaşmak için kendi işimde katkıda bulunuyorum.",
                 
-                // Yemek & Sosyal Haklar (10 Soru)
-                "Şirket yemeklerinin kalitesi ve çeşitliliğinden memnunum 🍽️",
-                "Sağlanan servis veya ulaşım imkanları yeterli 🚌",
-                "Aldığım maaş ve yan hakların sektör ortalamasının üzerinde olduğunu düşünüyorum 💰",
-                "Şirket tarafından sunulan sosyal haklar (özel sağlık sigortası, primler vb.) yeterli 🏥",
-                "Yemek saatlerinin, iş yüküme uygun ve esnek olduğunu düşünüyorum ⏱️",
-                "Yemeklerin kalitesinin, genel refahımı artırdığını düşünüyorum 🥘",
-                "Ofis içi ikramlar ve içecek seçenekleri yeterli ve çeşitli ☕",
-                "İşyeri yemekhane personelinin tutum ve davranışları nazik ve saygılı 👨‍🍳",
-                "Şirketin sağladığı yan haklar (hobi kulüpleri, spor imkanları vb.) memnuniyet verici 🎯",
-                "Şirketin, çalışanların refahına önem verdiğini düşünüyorum 💝",
+                // Üretim Verimliliği ve Süreçler (5 Soru)
+                "Kendi departmanımdan gelen veriler, üretim süreçlerinin verimliliğini doğru ölçmektedir.",
+                "Fabrikanın ERP/MRP sistemi, iş süreçlerimi hızlı ve doğru yürütmeme yardımcı olmaktadır.",
+                "Departmanlar arası proje ve görev akışları (örneğin satın alma-üretim) standardize edilmiştir.",
+                "İş süreçlerimde gereksiz bürokrasi ve onay mekanizmaları verimliliğimi düşürmektedir.",
+                "Kendi departmanım için belirlenen hedef ve KPI'lar (Ana Performans Göstergeleri) ulaşılabilirdir.",
                 
-                // İş İlişkileri & Güven (10 Soru)
-                "Yöneticim, performansımı düzenli olarak değerlendiriyor ve bana geri bildirim veriyor 📊",
-                "Yöneticim, iş hedeflerimin net ve anlaşılır olmasını sağlıyor 🎯",
-                "Ekip arkadaşlarım ve ben, ortak hedeflere ulaşmak için etkili bir şekilde iş birliği yapıyoruz 🤝",
-                "Şirketin stratejik kararları ve hedefleri hakkında yeterince bilgilendiriliyorum 📢",
-                "Yöneticim, görüş ve önerilerime değer veriyor 💭",
-                "Üst yönetime güveniyorum 🤝",
-                "İşyerindeki iletişim kanallarının açık ve şeffaf olduğunu düşünüyorum 💬",
-                "Şirket yönetiminin kararları adil ve eşitlikçi ⚖️",
-                "Sorunlarım veya şikayetlerim olduğunda, yetkililere ulaşmak kolay 📞",
-                "Yöneticim, başarılarımı takdir ediyor ve beni motive ediyor 👏",
+                // Makine/Ekipman Bakımı ve Teknoloji (5 Soru)
+                "Kullandığım IT donanımı (bilgisayar, yazılım vb.) işimi kesintisiz ve hızlı yapmamı sağlamaktadır.",
+                "Fabrikanın Bakım Yönetim Sistemi (CMMS), doğru ve güncel arıza/bakım verileri sunmaktadır.",
+                "Veri güvenliği ve yedekleme sistemleri konusunda kendimi güvende hissediyorum.",
+                "Üretimden gelen gerçek zamanlı veri akışı, doğru kararlar almam için yeterlidir.",
+                "Departmanım, yeni ve verimli teknolojilere yatırım yapılması konusunda teşvik edilmektedir.",
                 
-                // Sadakat & Kariyer (10 Soru)
-                "Şirkete karşı güçlü bir sadakat hissediyorum ❤️",
-                "Bu şirkette uzun vadeli bir kariyer planlıyorum 📅",
-                "Şirket içi terfi ve kariyer gelişimi fırsatlarının adil ve şeffaf olduğunu düşünüyorum 🚀",
-                "Şirketin, mesleki gelişimim için yeterli eğitim ve kaynak sağladığına inanıyorum 📚",
-                "İşimin, kişisel becerilerimi ve yeteneklerimi geliştirmeme yardımcı olduğunu düşünüyorum 💪",
-                "Şirketin misyon ve vizyonu bana ilham veriyor 🌟",
-                "İşimin, şirket başarısına önemli katkı sağladığını hissediyorum 🏆",
-                "Aldığım eğitimlerin kariyerime somut katkıları oldu 📈",
-                "Şirketin değerleri, benim kişisel değerlerimle uyumlu 🎭",
-                "Şirketin başarısı için ekstra çaba göstermeye istekliyim 💯",
+                // Kalite Yönetimi ve Kontrol (5 Soru)
+                "Fabrikanın kalite yönetim sistemi (ISO vb.) dokümantasyonu anlaşılır ve günceldir.",
+                "Kendi işimin nihai ürün kalitesine etkisini (örneğin satın alınan malzeme kalitesi) net olarak görebiliyorum.",
+                "Tedarikçi denetimi ve hammadde kabul süreçleri, kalitesiz girdiyi önlemede etkilidir.",
+                "Müşteri şikayetleri, kök neden analizi ve Düzeltici/Önleyici Faaliyet (DÖF) için etkin kullanılmaktadır.",
+                "Kalite hedeflerine ulaşmak için departmanlar arası işbirliği güçlüdür.",
                 
-                // Dijital Dönüşüm İsteği & Yenilenme (10 Soru)
-                "Şirketin dijital dönüşüm çabalarını destekliyorum 🔄",
-                "İşimi daha verimli hale getirecek yeni yazılım veya araçları kullanmaya açığım 💻",
-                "İş akışlarımızı kolaylaştıracak dijital çözümlerin hayata geçirilmesini istiyorum ⚡",
-                "Şirket, teknolojik yeniliklere ve güncel uygulamalara yatırım yapıyor 💡",
-                "İşimizde kullanılan dijital araçların kullanımına dair yeterli eğitim alıyorum 📖",
-                "Dijitalleşmenin iş güvenliğimizi ve veri gizliliğini artıracağına inanıyorum 🛡️",
-                "Şirketin, dijitalleşme sürecini başarılı bir şekilde yönettiğini düşünüyorum 🎯",
-                "İşimizle ilgili dijital gelişmeleri takip etmeye ve öğrenmeye istekliyim 🎓",
-                "Yeni teknolojilerin, iş-yaşam dengemi daha iyi kurmama yardımcı olacağına inanıyorum ⚖️",
-                "Dijital dönüşümle birlikte, şirket içinde daha fazla kariyer fırsatı doğacağını düşünüyorum 🚀"
+                // Eğitim ve Gelişim (5 Soru)
+                "Yöneticim, mesleki gelişimim için kurs ve seminerlere katılmamı desteklemektedir.",
+                "Departmanıma özel teknik ve yönetsel eğitimler yeterli sıklıkta düzenlenmektedir.",
+                "Fabrika içinde yükselme ve pozisyon değiştirme fırsatları konusunda şeffaflık vardır.",
+                "Performans değerlendirme sonuçları, somut gelişim planlarına dönüştürülmektedir.",
+                "Aldığım eğitimler, beni sektördeki yeni trendlere hazırlamaktadır.",
+                
+                // İletişim ve İşbirliği (5 Soru)
+                "Üretim/Mavi yaka çalışanlarla bilgi ve veri paylaşımı hızlı ve etkili bir şekilde yapılmaktadır.",
+                "Yönetim, kurumsal hedefleri tüm beyaz yakaya net ve düzenli olarak aktarmaktadır.",
+                "Departmanlar arası çıkar çatışmaları adil bir şekilde çözülmektedir.",
+                "Çapraz fonksiyonlu projelerde sorumluluklar net tanımlanmıştır.",
+                "Görüş ve önerilerim, fabrikanın genel stratejilerini etkileme potansiyeline sahiptir.",
+                
+                // Çalışma Koşulları ve Sosyal Haklar (5 Soru)
+                "Ofis alanlarının temizliği, bakımı ve fiziksel konforu çalışma motivasyonumu artırmaktadır.",
+                "Yıllık izin planlaması adil yapılmakta ve kullanmam teşvik edilmektedir.",
+                "Fabrikanın sunduğu ek sosyal haklar (özel sağlık sigortası, ulaşım vb.) tatmin edicidir.",
+                "Çalışma saatlerim, özel hayatımla dengeyi sağlamama olanak vermektedir.",
+                "Ofis ortamında çatışma kültürü yönetimin müdahalesiyle engellenmektedir.",
+                
+                // İş Yükü ve Zaman Yönetimi (5 Soru)
+                "Departmanımın toplam iş yükü personel sayısıyla dengelidir.",
+                "Acil durumlar dışında, fazla mesai yapma ihtiyacı nadiren ortaya çıkmaktadır.",
+                "İşlerimi önceliklendirme ve zamanımı yönetme konusunda yeterli özerkliğe sahibim.",
+                "Yöneticilerim, iş süreçlerini iyileştirerek gereksiz iş yükünü azaltmaya odaklanmıştır.",
+                "Proje teslim tarihleri ve iş hedefleri gerçekçi ve ulaşılabilirdir.",
+                
+                // Liderlik ve Yönetim (5 Soru)
+                "Yöneticim, görev dağılımını adil ve yetkinliklere uygun şekilde yapmaktadır.",
+                "Yöneticim, stratejik düşünmeme ve büyük resmi görmeme yardımcı olmaktadır.",
+                "Yönetim, hatalarımızdan ders çıkarmamıza izin veren bir öğrenme kültürü teşvik etmektedir.",
+                "Fabrika yönetiminin ahlaki ve etik standartlarına güveniyorum.",
+                "Yöneticim, karar alma süreçlerine aktif olarak katılmamı sağlamaktadır.",
+                
+                // Kurumsal Bağlılık ve Motivasyon (5 Soru)
+                "Fabrikanın uzun vadeli büyüme potansiyeline inanıyorum.",
+                "Fabrika içinde başarılı çalışanlar düzenli ve somut olarak tanınmakta/ödüllendirilmektedir.",
+                "Fabrikanın toplumsal sorumluluk projeleri kuruma olan bağlılığımı artırmaktadır.",
+                "Farklı departmanlar arası etkinlikler motivasyonu desteklemektedir.",
+                "Genel olarak, kariyerimi bu firmada sürdürme konusunda kendimi motive hissediyorum."
             ],
             "Yönetim": [
-                // Çalışma Ortamı & Konfor (10 Soru)
-                "Çalışma alanımın, odaklanma gerektiren görevler için uygun olduğunu düşünüyorum 🎯",
-                "Yönetim pozisyonunda gerekli olan tüm teknolojik ve fiziki donanımlara sahibim 💻",
-                "Şirketin, yöneticilerin iş-yaşam dengesini destekleyecek bir kültürü var ⚖️",
-                "Toplantı odaları ve ortak alanların kalitesi, verimli toplantılar için yeterli 🏢",
-                "Hibrit/uzaktan çalışma modelinin, yönetici olarak verimliliğimi artırdığını düşünüyorum 🏠",
-                "Çalışma ortamının stres seviyesi, performansımı olumsuz etkilemiyor",
-                "İş arkadaşlarım ve ekibimle olan iletişimim açık ve verimli 💬",
-                "Çalışma ortamının yenilikçi fikirleri teşvik ettiğini düşünüyorum 💡",
-                "Ekibimin, işlerini en iyi şekilde yapması için gerekli kaynaklara erişimi var 🛠️",
-                "İş yeri, yöneticiler arasında network kurmak için yeterli sosyal imkanlar sunuyor 🤝",
+                // İş Güvenliği ve Çevre (5 Soru)
+                "Fabrika genelinde proaktif bir iş güvenliği kültürü oluşturulmuştur (sıfır iş kazası hedefi).",
+                "Çevre ve iş güvenliği yatırımları için ayrılan bütçe yeterli ve önceliklidir.",
+                "Tüm seviyelerdeki çalışanların güvenlik eğitimleri ve farkındalık seviyeleri düzenli ölçülmektedir.",
+                "Fabrikanın çevre mevzuatına uyum riski düşüktür ve düzenli denetimler yapılmaktadır.",
+                "Güvenlik ve çevre konularındaki KPI'lar, üst yönetim toplantılarında düzenli olarak takip edilmektedir.",
                 
-                // Yemek & Sosyal Haklar (10 Soru)
-                "Şirket yemeklerinin kalitesi ve çeşitliliği, üst düzey çalışanlar için yeterli 🍽️",
-                "Aldığım maaş ve yan haklar paketi, piyasa standartlarında ve rekabetçi 💰",
-                "Şirketin, yöneticiler için sağladığı sosyal haklar (araba, prim vb.) adil 🚗",
-                "Şirketin sunduğu ek avantajlar (özel sigorta, ek emeklilik vb.) yeterli 🏥",
-                "Yan hakların, şirkete olan sadakatimi artırdığını düşünüyorum ❤️",
-                "Maaş ve yan haklar politikasının şeffaf olduğunu düşünüyorum 📊",
-                "Şirketin yemek kalitesinin, çalışan bağlılığı üzerinde olumlu etkisi olduğuna inanıyorum 🥘",
-                "İş seyahatlerindeki harcama politikaları adil ve esnek ✈️",
-                "Şirketin sunduğu yan hakların, iş-yaşam dengemi korumama yardımcı olduğunu düşünüyorum ⚖️",
-                "Şirketin, üst düzey çalışanlar için sağladığı sosyal imkanlardan memnunum 🎯",
+                // Üretim Verimliliği ve Süreçler (5 Soru)
+                "Fabrikanın genel ekipman etkinliği (OEE) hedeflenen sektör standardına ulaşmıştır.",
+                "Tesis düzeni (layout), malzeme akışını ve üretim verimliliğini maksimuma çıkarmaktadır.",
+                "Üretimdeki kayıp/atık oranları, karlılık hedeflerimizle uyumlu ve kabul edilebilir seviyededir.",
+                "Üretim planlama süreçlerimiz, müşteri taleplerine hızlı yanıt verme yeteneğimizi desteklemektedir.",
+                "Fabrikamız, yalın üretim (lean manufacturing) prensiplerini etkin bir şekilde uygulamaktadır.",
                 
-                // İş İlişkileri & Güven (10 Soru)
-                "Üst yönetimle aramızda açık ve şeffaf bir iletişim var 📢",
-                "Yönetim kurulunun stratejik kararlarını destekliyor ve güveniyorum 🎯",
-                "Ekibim, hedeflere ulaşmak için yeterli motivasyona ve yetkiye sahip 🔥",
-                "Şirketin hedeflerini, ekibime etkili bir şekilde aktarabiliyorum 📣",
-                "Şirketin, yöneticileriyle arasında güçlü bir güven ilişkisi olduğuna inanıyorum 🤝",
-                "Önemli kararlar alırken, görüşlerime değer verildiğini hissediyorum 💭",
-                "Şirketin, yöneticiler arasındaki rekabeti yönetme biçimi adil ⚖️",
-                "Yönetici olarak, ekibimden gelen geri bildirimleri rahatlıkla kabul ediyorum 👂",
-                "Şirket yönetimi, hatalardan ders çıkarmaya ve iyileştirmeye açık 🔄",
-                "Yönetici olarak, şirket tarafından yeterince takdir edildiğimi düşünüyorum 👏",
+                // Makine/Ekipman Bakımı ve Teknoloji (5 Soru)
+                "Toplam Üretken Bakım (TPM) stratejimiz, arıza sürelerini minimize etmede başarılıdır.",
+                "Mevcut makine parkuru ve ekipman yaşı, üretim kalitemizi ve hızımızı kısıtlamamaktadır.",
+                "Yeni nesil Endüstri 4.0 teknolojilerine yatırım yapmak için stratejik planımız hazırdır.",
+                "Bakım ve üretim departmanları arasındaki koordinasyon ve bütçe kullanımı verimlidir.",
+                "Fabrikanın dijitalleşme ve otomasyon stratejisi, uzun vadeli büyüme hedeflerini desteklemektedir.",
                 
-                // Sadakat & Gelecek (10 Soru)
-                "Şirkete karşı güçlü bir sadakat hissediyorum ve bu duyguyu ekibime de aktarıyorum ❤️",
-                "Şirketin uzun vadeli büyüme potansiyeline güveniyorum 📈",
-                "Şirketin misyon ve vizyonu, yöneticilik kariyerime yön veriyor 🌟",
-                "Şirketteki pozisyonumun, sektöre yön veren bir rol oynadığını düşünüyorum 🏆",
-                "Şirketin, liderlik becerilerimi geliştirmem için gerekli eğitimleri sağladığına inanıyorum 📚",
-                "Şirketin geleceğinin parlak olduğunu düşünüyorum ve bu, beni motive ediyor ✨",
-                "Şirket içinde kariyerimi daha üst seviyelere taşıyacak fırsatlar görüyorum 🚀",
-                "Şirketin, geleceğin liderlerini yetiştirme konusunda somut adımlar attığına inanıyorum 👨‍🏫",
-                "Şirkete olan bağlılığım, ekibimin bağlılığını da artırıyor 🔗",
-                "Şirketin, zor zamanlarda dahi çalışanlarının arkasında duracağını düşünüyorum 🛡️",
+                // Kalite Yönetimi ve Kontrol (5 Soru)
+                "Tedarikçi Kalite Yönetimi (SQM) süreçlerimiz, girdi kalitesinde istikrarı sağlamaktadır.",
+                "Dahili ve harici hurda/fire oranları, sektör benchmark'ları ile karşılaştırıldığında rekabetçidir.",
+                "Müşteri geri bildirimleri ve şikayetleri, ürün ve süreç iyileştirmeleri için temel girdi olarak kullanılmaktadır.",
+                "Fabrikamız, sektörün gerektirdiği tüm kalite sertifikasyonlarına sahiptir.",
+                "Kalite departmanına ayrılan personel ve teknoloji bütçesi yeterlidir.",
                 
-                // Dijital Dönüşüm İsteği & Yenilenme (10 Soru)
-                "Şirketin dijital dönüşüm stratejisinin açık ve anlaşılır olduğunu düşünüyorum 🎯",
-                "Dijitalleşmenin, şirketimizin rekabet gücünü artıracağına inanıyorum 💪",
-                "Yeni teknolojilerin, yönetim süreçlerini daha verimli hale getireceğini düşünüyorum ⚡",
-                "Şirket, dijital dönüşüm için gerekli bütçeyi ve kaynakları ayırıyor 💰",
-                "Yönetici olarak, dijital dönüşüm süreçlerini etkin bir şekilde yönetebildiğime inanıyorum 🎛️",
-                "Ekibimi, dijital yenilikleri benimsemeleri için teşvik ediyorum 🚀",
-                "Şirketin, kendini sürekli yenileme ve güncel kalma isteğini destekliyorum 🔄",
-                "Dijital dönüşümün, iş süreçlerimizde şeffaflığı artırdığını düşünüyorum 🔍",
-                "Yeni teknolojiler, karar alma süreçlerimize katkı sağlıyor 📊",
-                "Şirketin, geleceğin teknolojilerine yatırım yaptığını düşünüyorum 🔮"
+                // Eğitim ve Gelişim (5 Soru)
+                "Çalışanların mevcut yetkinlikleri ve işin gerektirdiği yetkinlikler arasındaki fark düzenli ölçülmektedir.",
+                "Yönetici/Liderlik geliştirme programları, şirketin gelecekteki lider ihtiyacını karşılamaktadır.",
+                "Yeni işe alım ve oryantasyon programları, işgücünün adaptasyon hızını artırmaktadır.",
+                "Eğitim bütçesi, hem mavi yaka hem de beyaz yaka personelinin gelişim ihtiyacını karşılamaktadır.",
+                "Çapraz eğitim programları (cross-training), esnek ve yedekli bir işgücü oluşturmaktadır.",
+                
+                // İletişim ve İşbirliği (5 Soru)
+                "Üst yönetimden tüm personele stratejik bilgi akışı şeffaf ve etkilidir.",
+                "Departmanlar arası rekabet yerine işbirliği kültürünü teşvik eden mekanizmalar mevcuttur.",
+                "Kriz ve acil durum iletişim planları, tüm paydaşlara bilgi akışını güvence altına almaktadır.",
+                "Yönetim kurulu kararları ve hedefler, tüm seviyelerdeki çalışan KPI'larına doğru bir şekilde yayılmıştır.",
+                "Çalışanların fikirlerini üst yönetime ulaştıran kanallar etkin çalışmaktadır.",
+                
+                // Çalışma Koşulları ve Sosyal Haklar (5 Soru)
+                "Toplam işgücü maliyeti, pazardaki rekabet avantajımızı koruyarak çalışan memnuniyetini sağlamaktadır.",
+                "İnsan kaynakları politikalarımız, çeşitliliği ve eşit fırsatları desteklemektedir.",
+                "Çalışanların sağlık ve refahı (wellness) için aktif programlar yürütülmektedir.",
+                "Çalışan devir hızımız (turnover rate) sektör ortalamasının altındadır.",
+                "Fabrikanın fiziksel koşullarına yapılan yatırımlar, üretkenliği ve işyeri güvenliğini artırmıştır.",
+                
+                // İş Yükü ve Zaman Yönetimi (5 Soru)
+                "Üretim ve ofis personeli için uygulanan esnek çalışma modelleri, verimliliği artırmaktadır.",
+                "Fazla mesai bütçesi, hedeflenen maliyet ve verimlilik dengesini korumaktadır.",
+                "İş etüdü ve zaman analizleri düzenli yapılarak iş süreçleri optimize edilmektedir.",
+                "Yönetici seviyesinde, iş yükü ve stres yönetimi konusunda destekleyici programlar uygulanmaktadır.",
+                "Büyük projelerin zaman ve kaynak planlaması doğru yapılmaktadır.",
+                
+                // Liderlik ve Yönetim (5 Soru)
+                "Fabrikada çalışanlara yetki verme ve sorumluluk alma kültürü teşvik edilmektedir.",
+                "Yöneticilerin koçluk ve mentorluk becerileri, çalışan gelişimini desteklemektedir.",
+                "Fabrika yönetiminin uzun vadeli vizyonu net ve ilham vericidir.",
+                "Performans yönetim sistemi, çalışanları sadece geçmiş sonuçlara göre değil, potansiyele göre de değerlendirmektedir.",
+                "Yönetim olarak, değişime hızlı adapte olma yeteneğimiz yüksektir.",
+                
+                // Kurumsal Bağlılık ve Motivasyon (5 Soru)
+                "Kurumsal itibarımız, sektörde kalifiye personel çekme ve elde tutma konusunda avantaj sağlamaktadır.",
+                "Çalışan memnuniyeti anket sonuçları, düzenli olarak aksiyon planlarına dönüştürülmektedir.",
+                "Ödüllendirme ve takdir sistemi, çalışanların motivasyonunu ve bağlılığını artırmaktadır.",
+                "Fabrikanın finansal performansı hakkında çalışanlarla şeffaf iletişim kurulmaktadır.",
+                "Yönetim, çalışanlar arasında aidiyet duygusunu güçlendirecek etkinliklere aktif olarak destek vermektedir."
             ]
         };
 
@@ -1325,38 +1355,46 @@ function loadParticipantTable() {
                 {
                     name: 'Mavi Yaka',
                     categories: [
-                        'Çalışma Ortamı',
-                        'Yemek ve Sosyal Haklar',
-                        'İş İlişkileri',
-                        'Sadakat ve Gelecek',
-                        'Dijitalleşme ve Yenilik',
-                        'Genel Memnuniyet'
+                        'İş Güvenliği ve Çevre',
+                        'Üretim Verimliliği ve Süreçler',
+                        'Makine/Ekipman Bakımı ve Teknoloji',
+                        'Kalite Yönetimi ve Kontrol',
+                        'Eğitim ve Gelişim',
+                        'İletişim ve İşbirliği',
+                        'Çalışma Koşulları ve Sosyal Haklar',
+                        'İş Yükü ve Zaman Yönetimi',
+                        'Liderlik ve Yönetim',
+                        'Kurumsal Bağlılık ve Motivasyon'
                     ]
                 },
                 {
                     name: 'Beyaz Yaka',
                     categories: [
-                        'Çalışma Ortamı',
-                        'Yönetim ve Liderlik',
-                        'İş Yükü ve Dengesi',
-                        'İç İletişim',
-                        'Kariyer Gelişimi',
-                        'Ücret ve Yan Haklar',
-                        'Takdir ve Geri Bildirim',
-                        'İş Süreçleri',
-                        'Kurum Kültürü',
-                        'Genel İş Memnuniyeti'
+                        'İş Güvenliği ve Çevre',
+                        'Üretim Verimliliği ve Süreçler',
+                        'Makine/Ekipman Bakımı ve Teknoloji',
+                        'Kalite Yönetimi ve Kontrol',
+                        'Eğitim ve Gelişim',
+                        'İletişim ve İşbirliği',
+                        'Çalışma Koşulları ve Sosyal Haklar',
+                        'İş Yükü ve Zaman Yönetimi',
+                        'Liderlik ve Yönetim',
+                        'Kurumsal Bağlılık ve Motivasyon'
                     ]
                 },
                 {
                     name: 'Yönetim',
                     categories: [
-                        'Finansal Performans ve Operasyonel Verimlilik',
-                        'Pazarlama ve Marka Yönetimi',
-                        'İnsan Kaynakları Yönetimi',
-                        'Müşteri/Çalışan İlişkileri ve Kalite Kontrol',
-                        'Teknolojik Altyapı ve Gelecek Vizyonu',
-                        'Genel Yönetim Memnuniyeti'
+                        'İş Güvenliği ve Çevre',
+                        'Üretim Verimliliği ve Süreçler',
+                        'Makine/Ekipman Bakımı ve Teknoloji',
+                        'Kalite Yönetimi ve Kontrol',
+                        'Eğitim ve Gelişim',
+                        'İletişim ve İşbirliği',
+                        'Çalışma Koşulları ve Sosyal Haklar',
+                        'İş Yükü ve Zaman Yönetimi',
+                        'Liderlik ve Yönetim',
+                        'Kurumsal Bağlılık ve Motivasyon'
                     ]
                 }
             ];
@@ -1373,9 +1411,9 @@ function loadParticipantTable() {
 
             // Her grup ve kategori için frekansları hesapla
             function getCategoryIndexes(group, catIdx) {
-                // Her kategori 10 soru ise:
-                const start = groupRanges[group][0] + catIdx * 10;
-                const end = start + 9;
+                // Her kategori 5 soru ise:
+                const start = groupRanges[group][0] + catIdx * 5;
+                const end = start + 4;
                 return [start, end];
             }
 
