@@ -163,9 +163,14 @@
                 
                 <!-- Kayıtlı Şirketler Dropdown -->
                 <div class="mb-3 hidden" id="existingCompanySelect">
-                    <select id="companyDropdown" class="w-full border-2 border-purple-300 rounded px-3 py-2 text-sm focus:ring-2 focus:ring-purple-500 focus:border-purple-500 bg-white">
-                        <option value="">Şirketinizi seçin...</option>
-                    </select>
+                    <div class="flex gap-2">
+                        <select id="companyDropdown" class="flex-1 border-2 border-purple-300 rounded px-3 py-2 text-sm focus:ring-2 focus:ring-purple-500 focus:border-purple-500 bg-white">
+                            <option value="">Şirketinizi seçin...</option>
+                        </select>
+                        <button type="button" id="refreshCompaniesBtn" class="px-3 py-2 bg-purple-100 hover:bg-purple-200 border-2 border-purple-300 rounded text-sm font-medium text-purple-700 transition-colors" title="Şirket listesini yenile">
+                            🔄
+                        </button>
+                    </div>
                 </div>
                 <div class="mb-3">
                     <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
@@ -541,11 +546,7 @@ function loadParticipantTable() {
         // Google Sign-In logic
         let googleUser = null;
         document.addEventListener('DOMContentLoaded', function() {
-            // Anket başlatma butonunu startSurvey fonksiyonuna bağla
-            const startBtn = document.getElementById('startSurvey');
-            if (startBtn) {
-                startBtn.addEventListener('click', startSurvey);
-            }
+            // Google Sign-In setup
             const googleBtn = document.getElementById('googleSignInBtn');
             const userInfoDiv = document.getElementById('googleUserInfo');
             if (googleBtn) {
@@ -574,17 +575,8 @@ function loadParticipantTable() {
         });
 
         // Anket başlatma butonuna Google ile giriş kontrolü ekle
-        document.addEventListener('DOMContentLoaded', function() {
-            const startBtn = document.getElementById('startSurvey');
-            if (startBtn) {
-                startBtn.addEventListener('click', function(e) {
-                    if (!googleUser) {
-                        e.preventDefault();
-                        alert('Ankete başlamadan önce Google ile giriş yapmalısınız.');
-                    }
-                }, true);
-            }
-        });
+        // (Bu kısım kaldırıldı - startSurvey fonksiyonunda kontrol yapılıyor)
+        
         // Global değişkenler
         let currentModule = 'survey';
         let surveyStartTime = null;
@@ -848,6 +840,12 @@ function loadParticipantTable() {
             document.getElementById('newCompanyRadio').addEventListener('change', toggleCompanyInputType);
             document.getElementById('existingCompanyRadio').addEventListener('change', toggleCompanyInputType);
             
+            // Şirket listesi yenileme
+            document.getElementById('refreshCompaniesBtn').addEventListener('click', function() {
+                console.log('Şirket listesi manuel olarak yenileniyor...');
+                loadExistingCompanies();
+            });
+            
             // Anket başlatma
             document.getElementById('startSurvey').addEventListener('click', startSurvey);
             
@@ -915,24 +913,31 @@ function loadParticipantTable() {
         // Mevcut şirketleri dropdown'a yükle
         async function loadExistingCompanies() {
             try {
-                if (!systemData.surveyData) {
-                    await loadSystemData();
-                }
+                console.log('Mevcut şirketler yükleniyor...');
+                // Her zaman fresh data yükle
+                console.log('Firebase\'den güncel veri yükleniyor...');
+                await loadSystemData();
                 
+                console.log('Sistem verileri:', systemData.surveyData);
                 const dropdown = document.getElementById('companyDropdown');
                 dropdown.innerHTML = '<option value="">Şirketinizi seçin...</option>';
                 
                 if (systemData.surveyData && systemData.surveyData.companies) {
+                    console.log('Bulunan şirketler:', systemData.surveyData.companies);
                     // Şirketleri alfabetik sıraya koy
                     const companies = Object.values(systemData.surveyData.companies)
                         .sort((a, b) => a.name.localeCompare(b.name));
                     
+                    console.log('Sıralanmış şirketler:', companies);
                     companies.forEach(company => {
+                        console.log('Dropdown\'a ekleniyor:', company.name);
                         const option = document.createElement('option');
                         option.value = company.name;
                         option.textContent = company.name;
                         dropdown.appendChild(option);
                     });
+                } else {
+                    console.log('Hiç şirket bulunamadı veya companies objesi yok');
                 }
                 
                 // Dropdown değişikliğini dinle
@@ -1104,6 +1109,19 @@ function loadParticipantTable() {
 
         // Firebase Realtime Database API fonksiyonları (GLOBAL SCOPE)
         const FIREBASE_DB_URL = 'https://isletme-76bad-default-rtdb.europe-west1.firebasedatabase.app/';
+
+        // Sistem verilerini yükle (loadFromFirebase'i wrap eder)
+        async function loadSystemData() {
+            try {
+                console.log('Sistem verileri yükleniyor...');
+                await loadFromFirebase();
+                console.log('Sistem verileri başarıyla yüklendi:', systemData.surveyData);
+                return systemData.surveyData;
+            } catch (error) {
+                console.error('Sistem veri yükleme hatası:', error);
+                return null;
+            }
+        }
 
         async function loadFromFirebase() {
             try {
