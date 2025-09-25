@@ -1360,7 +1360,9 @@ function loadParticipantTable() {
                     ]
                 }
             ];
-            const satisfactionLabels = ['Çok Memnunum', 'Memnunum', 'Kararsızım', 'Memnun Değilim', 'Hiç Memnun Değilim'];
+            // 1..5 puan eşlemesi: [1=Hiç Memnun Değilim, 2=Memnun Değilim, 3=Kararsızım, 4=Memnunum, 5=Çok Memnunum]
+            // Tablo başlıkları düşükten yükseğe sıralanmalı (soldan sağa)
+            const satisfactionLabels = ['Hiç Memnun Değilim', 'Memnun Değilim', 'Kararsızım', 'Memnunum', 'Çok Memnunum'];
 
             // Soru index aralıkları (örnek, gerçek indexler soru setine göre ayarlanmalı)
             const groupRanges = {
