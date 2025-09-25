@@ -141,8 +141,31 @@
                     </button>
                     <div id="googleUserInfo" class="text-xs text-green-700 font-medium hidden"></div>
                 </div>
+                
+                <!-- Şirket Seçim Tipi -->
                 <div class="mb-3">
+                    <div class="flex gap-4 mb-2">
+                        <label class="flex items-center cursor-pointer">
+                            <input type="radio" name="companyType" value="new" id="newCompanyRadio" class="mr-2 text-purple-600 focus:ring-purple-500" checked>
+                            <span class="text-sm font-medium text-gray-700">🆕 Yeni Şirket</span>
+                        </label>
+                        <label class="flex items-center cursor-pointer">
+                            <input type="radio" name="companyType" value="existing" id="existingCompanyRadio" class="mr-2 text-purple-600 focus:ring-purple-500">
+                            <span class="text-sm font-medium text-gray-700">📋 Kayıtlı Şirket</span>
+                        </label>
+                    </div>
+                </div>
+                
+                <!-- Manuel Şirket Adı Girişi -->
+                <div class="mb-3" id="manualCompanyInput">
                     <input type="text" id="companyName" placeholder="Şirket adınızı girin" class="w-full border-2 border-purple-300 rounded px-3 py-2 text-sm focus:ring-2 focus:ring-purple-500 focus:border-purple-500">
+                </div>
+                
+                <!-- Kayıtlı Şirketler Dropdown -->
+                <div class="mb-3 hidden" id="existingCompanySelect">
+                    <select id="companyDropdown" class="w-full border-2 border-purple-300 rounded px-3 py-2 text-sm focus:ring-2 focus:ring-purple-500 focus:border-purple-500 bg-white">
+                        <option value="">Şirketinizi seçin...</option>
+                    </select>
                 </div>
                 <div class="mb-3">
                     <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
@@ -489,6 +512,17 @@ function loadParticipantTable() {
       </div>
     </div>
 
+    <!-- Category Detail Modal -->
+    <div id="categoryDetailModal" class="modal">
+      <div class="modal-content max-w-4xl bg-white shadow-2xl" style="margin: 5% auto; padding: 30px; border-radius: 20px; max-height: 80vh; overflow-y: auto; width: 90vw;">
+        <div class="modal-header flex justify-between items-center mb-6 border-b pb-4">
+          <h2 class="text-2xl font-bold text-gray-800" id="categoryDetailTitle">📋 Kategori Detayları</h2>
+          <span class="close cursor-pointer text-3xl text-gray-500 hover:text-gray-700" onclick="document.getElementById('categoryDetailModal').classList.remove('show')">&times;</span>
+        </div>
+        <div id="categoryDetailContent"></div>
+      </div>
+    </div>
+
     <script>
         // Firebase config
         const firebaseConfig = {
@@ -790,6 +824,7 @@ function loadParticipantTable() {
         document.addEventListener('DOMContentLoaded', function() {
             setupEventListeners();
             showModule('survey');
+            loadSystemData(); // Sistem verilerini yükle
             // loadDemoData();
         });
 
@@ -808,6 +843,10 @@ function loadParticipantTable() {
             document.getElementById('blueCollar').addEventListener('click', () => selectJobType('Mavi Yaka'));
             document.getElementById('whiteCollar').addEventListener('click', () => selectJobType('Beyaz Yaka'));
             document.getElementById('management').addEventListener('click', () => selectJobType('Yönetim'));
+            
+            // Şirket türü seçimi
+            document.getElementById('newCompanyRadio').addEventListener('change', toggleCompanyInputType);
+            document.getElementById('existingCompanyRadio').addEventListener('change', toggleCompanyInputType);
             
             // Anket başlatma
             document.getElementById('startSurvey').addEventListener('click', startSurvey);
@@ -854,8 +893,81 @@ function loadParticipantTable() {
             document.getElementById(buttonMap[jobType]).classList.add('active-tab');
         }
 
+        // Şirket giriş türü değiştirme
+        function toggleCompanyInputType() {
+            const isNewCompany = document.getElementById('newCompanyRadio').checked;
+            const manualInput = document.getElementById('manualCompanyInput');
+            const dropdownSelect = document.getElementById('existingCompanySelect');
+            
+            if (isNewCompany) {
+                // Yeni şirket: Manuel input göster, dropdown gizle
+                manualInput.classList.remove('hidden');
+                dropdownSelect.classList.add('hidden');
+                document.getElementById('companyName').value = '';
+            } else {
+                // Mevcut şirket: Dropdown göster, manuel input gizle
+                manualInput.classList.add('hidden');
+                dropdownSelect.classList.remove('hidden');
+                loadExistingCompanies();
+            }
+        }
+
+        // Mevcut şirketleri dropdown'a yükle
+        async function loadExistingCompanies() {
+            try {
+                if (!systemData.surveyData) {
+                    await loadSystemData();
+                }
+                
+                const dropdown = document.getElementById('companyDropdown');
+                dropdown.innerHTML = '<option value="">Şirketinizi seçin...</option>';
+                
+                if (systemData.surveyData && systemData.surveyData.companies) {
+                    // Şirketleri alfabetik sıraya koy
+                    const companies = Object.values(systemData.surveyData.companies)
+                        .sort((a, b) => a.name.localeCompare(b.name));
+                    
+                    companies.forEach(company => {
+                        const option = document.createElement('option');
+                        option.value = company.name;
+                        option.textContent = company.name;
+                        dropdown.appendChild(option);
+                    });
+                }
+                
+                // Dropdown değişikliğini dinle
+                dropdown.addEventListener('change', function() {
+                    // Seçilen şirketi companyName input'una koy (mevcut kod uyumluluğu için)
+                    if (this.value) {
+                        document.getElementById('companyName').value = this.value;
+                    } else {
+                        document.getElementById('companyName').value = '';
+                    }
+                });
+                
+            } catch (error) {
+                console.error('Şirket listesi yüklenirken hata:', error);
+                showModal('⚠️ Hata', 'Şirket listesi yüklenirken bir hata oluştu. Lütfen manuel giriş yapın.');
+                // Hata durumunda manuel girişe geç
+                document.getElementById('newCompanyRadio').checked = true;
+                toggleCompanyInputType();
+            }
+        }
+
         function startSurvey() {
-            const companyName = document.getElementById('companyName').value.trim();
+            // Şirket adını al (manuel veya dropdown'dan)
+            let companyName = '';
+            const isNewCompany = document.getElementById('newCompanyRadio').checked;
+            
+            if (isNewCompany) {
+                companyName = document.getElementById('companyName').value.trim();
+            } else {
+                const dropdown = document.getElementById('companyDropdown');
+                companyName = dropdown.value.trim();
+                // Dropdown seçimini companyName input'una da yaz (diğer fonksiyonlar için)
+                document.getElementById('companyName').value = companyName;
+            }
+            
             const firstName = document.getElementById('firstName').value.trim();
             const lastName = document.getElementById('lastName').value.trim();
             const disclaimerAccepted = document.getElementById('acceptDisclaimer').checked;
@@ -1464,12 +1576,12 @@ function loadParticipantTable() {
                     if (catTotal === 0 && groupTotal > 0) {
                         // Kategoriye ait sorular yoksa, grup sayılarını göster
                         table += `<tr>
-                            <td class="sub-category">${cat}</td>
+                            <td class="sub-category">${cat} <button onclick="showCategoryDetail('${group.name}', ${catIdx}, '${cat}')" class="ml-2 px-2 py-1 bg-blue-500 text-white text-xs rounded hover:bg-blue-600">📋 Detay</button></td>
                             ${groupCounts.map(c => `<td style="text-align: center;">${c}</td>`).join('')}
                         </tr>`;
                     } else {
                         table += `<tr>
-                            <td class="sub-category">${cat}</td>
+                            <td class="sub-category">${cat} <button onclick="showCategoryDetail('${group.name}', ${catIdx}, '${cat}')" class="ml-2 px-2 py-1 bg-blue-500 text-white text-xs rounded hover:bg-blue-600">📋 Detay</button></td>
                             ${catCounts.map(c => `<td style="text-align: center;">${c}</td>`).join('')}
                         </tr>`;
                     }
@@ -2086,6 +2198,110 @@ function loadParticipantTable() {
                     }
                 });
             }
+
+        // Kategori detay gösterme fonksiyonu
+        function showCategoryDetail(groupName, categoryIndex, categoryName) {
+            if (!systemData.surveyData) return;
+            
+            // Mevcut şirket anketlerini al
+            const companyName = loggedInCompany.name.toLowerCase();
+            const surveys = systemData.surveyData.responses.filter(s => 
+                s.companyName.toLowerCase() === companyName && 
+                s.jobType === groupName
+            );
+
+            if (surveys.length === 0) {
+                document.getElementById('categoryDetailTitle').textContent = `📋 ${categoryName} - Veri Yok`;
+                document.getElementById('categoryDetailContent').innerHTML = `
+                    <div class="text-center py-8 text-gray-500">
+                        <p>Bu kategori için henüz anket verisi bulunmuyor.</p>
+                    </div>
+                `;
+                document.getElementById('categoryDetailModal').classList.add('show');
+                return;
+            }
+
+            // Kategori soruları al
+            const groupQuestions = questions[groupName];
+            if (!groupQuestions) return;
+
+            // Soru index aralığını hesapla (her kategori 5 soru)
+            const startIndex = categoryIndex * 5;
+            const endIndex = startIndex + 5;
+            const categoryQuestions = groupQuestions.slice(startIndex, endIndex);
+
+            // Her soru için cevapları topla
+            let detailHTML = `
+                <div class="mb-4 p-4 bg-blue-50 rounded-lg">
+                    <h3 class="text-lg font-semibold text-blue-800">${groupName} - ${categoryName}</h3>
+                    <p class="text-sm text-blue-600">Bu kategorideki soruların detaylı cevapları:</p>
+                </div>
+            `;
+
+            categoryQuestions.forEach((question, qIdx) => {
+                const actualQuestionIndex = startIndex + qIdx;
+                
+                // Bu soru için tüm cevapları topla
+                const questionScores = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
+                let totalAnswers = 0;
+                
+                surveys.forEach(survey => {
+                    if (survey.answers[actualQuestionIndex]) {
+                        const score = survey.answers[actualQuestionIndex].score;
+                        if (score >= 1 && score <= 5) {
+                            questionScores[score]++;
+                            totalAnswers++;
+                        }
+                    }
+                });
+
+                // Skor etiketleri
+                const scoreLabels = {
+                    1: 'Hiç Memnun Değilim',
+                    2: 'Memnun Değilim', 
+                    3: 'Kararsızım',
+                    4: 'Memnunum',
+                    5: 'Çok Memnunum'
+                };
+
+                // En yüksek skorlu cevabı bul
+                let maxScore = 0;
+                let maxScoreLabel = '';
+                Object.keys(questionScores).forEach(score => {
+                    if (questionScores[score] > maxScore) {
+                        maxScore = questionScores[score];
+                        maxScoreLabel = scoreLabels[score];
+                    }
+                });
+
+                detailHTML += `
+                    <div class="mb-4 p-4 border rounded-lg ${maxScore > 0 && maxScore === questionScores[1] ? 'bg-red-50 border-red-200' : maxScore === questionScores[5] ? 'bg-green-50 border-green-200' : 'bg-gray-50 border-gray-200'}">
+                        <h4 class="font-medium text-gray-800 mb-2">${qIdx + 1}. ${question}</h4>
+                        <div class="grid grid-cols-5 gap-2 text-sm">
+                            ${Object.keys(scoreLabels).map(score => {
+                                const count = questionScores[score];
+                                const percentage = totalAnswers > 0 ? Math.round((count / totalAnswers) * 100) : 0;
+                                const isMax = count === maxScore && count > 0;
+                                return `
+                                    <div class="text-center p-2 rounded ${isMax ? 'bg-blue-100 font-bold' : 'bg-white'}">
+                                        <div class="text-xs text-gray-600">${scoreLabels[score]}</div>
+                                        <div class="font-semibold ${isMax ? 'text-blue-600' : 'text-gray-800'}">${count}</div>
+                                        <div class="text-xs text-gray-500">${percentage}%</div>
+                                    </div>
+                                `;
+                            }).join('')}
+                        </div>
+                        ${totalAnswers > 0 ? `<div class="mt-2 text-sm text-gray-600">En çok verilen cevap: <span class="font-semibold">${maxScoreLabel}</span> (${maxScore} kişi)</div>` : '<div class="text-sm text-gray-500">Bu soru için henüz cevap yok</div>'}
+                    </div>
+                `;
+            });
+
+            // Modal'ı güncelle ve göster
+            document.getElementById('categoryDetailTitle').textContent = `📋 ${categoryName} Detayları`;
+            document.getElementById('categoryDetailContent').innerHTML = detailHTML;
+            document.getElementById('categoryDetailModal').classList.add('show');
+        }
+
     </script>
 </body>
 </html>
