@@ -677,7 +677,7 @@ function loadParticipantTable() {
                 // İş Yükü ve Zaman Yönetimi (5 Soru)
                 "Günlük iş yüküm dengeli ve yönetilebilir bir seviyededir.",
                 "Yapılan fazla mesai (overtime) planlamaları adil ve gerekli durumlarda yapılmaktadır.",
-                "Üretimdeki aksaklıklar ve arızalar, iş saatlerimi sürekli uzatmama neden olmamaktadır.",
+                "Üretimdeki aksaklıklar ve arızalar, iş saatlerimi sürekli uzatmama neden olmaktadır.",
                 "İşimi zamanında bitirmem için gerekli ekip ve kaynak desteğine sahibim.",
                 "Vardiya/izin planlamaları adil ve kişisel ihtiyaçlarım dikkate alınarak yapılmaktadır.",
                 
@@ -1760,7 +1760,7 @@ function loadParticipantTable() {
                         // Anket özetini ve gruplama verilerini hazırla
                         const summary = document.getElementById('detailedReport').innerText.slice(0, 2000);
                         const prompt = `Bir insan kaynakları uzmanı gibi aşağıdaki anket raporunu analiz et.\n\nRapor Özeti:\n${summary}\n\nAşağıdaki başlıklarla detaylı, profesyonel ve uygulanabilir bir analiz yaz:\n\n1. Mevcut Durum\n2. Ne Yapılmalı\n3. Böyle Giderse Ne Olur\n\nHer başlık için en az 3-4 cümlelik, özgün ve açıklayıcı bir metin oluştur.\n`;
-                        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent`, {
+                        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent`, {
                             method: 'POST',
                             headers: { 
                                 'Content-Type': 'application/json',
@@ -2143,7 +2143,7 @@ function loadParticipantTable() {
                 window._charts.satisfactionChart = new Chart(satisfactionChartCtx, {
                     type: 'bar',
                     data: {
-                        labels: ['Hiç Memnun Değilim', 'Memnun Değilim', 'Kararsızım', 'Memnunum', 'Çok Memnunum'],
+                        labels: ['Hiç Memnun Değilim', 'Memnun Değilim', 'Kararsızım', 'Memnunum', 'Çok Memnun'],
                         datasets: [{
                             label: 'Memnuniyet Dağılımı',
                             data: satisfactionData,
