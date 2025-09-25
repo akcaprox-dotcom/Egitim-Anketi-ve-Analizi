@@ -80,6 +80,22 @@
         .survey-table tbody tr:hover {
             background: #e3f2fd;
         }
+        
+        /* Pulse animasyonu (Google buton uyarısı için) */
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+                opacity: 1;
+            }
+            50% {
+                transform: scale(1.05);
+                opacity: 0.8;
+            }
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
     </style>
 </head>
 <body class="bg-gray-100 min-h-screen">
@@ -180,8 +196,11 @@
                     </div>
                 </div>
                 <div class="grid grid-cols-2 gap-2 mb-4">
-                    <input type="text" id="firstName" placeholder="Adınız" class="border-2 border-gray-300 rounded px-3 py-2 text-sm focus:ring-2 focus:ring-purple-500 focus:border-purple-500">
-                    <input type="text" id="lastName" placeholder="Soyadınız" class="border-2 border-gray-300 rounded px-3 py-2 text-sm focus:ring-2 focus:ring-purple-500 focus:border-purple-500">
+                    <input type="text" id="firstName" placeholder="Adınız" class="border-2 border-gray-300 rounded px-3 py-2 text-sm focus:ring-2 focus:ring-purple-500 focus:border-purple-500 bg-gray-50" readonly>
+                    <input type="text" id="lastName" placeholder="Soyadınız" class="border-2 border-gray-300 rounded px-3 py-2 text-sm focus:ring-2 focus:ring-purple-500 focus:border-purple-500 bg-gray-50" readonly>
+                </div>
+                <div class="text-xs text-gray-500 mb-4" id="nameFieldsInfo">
+                    ℹ️ Ad ve soyad alanları Google ile giriş yaptıktan sonra düzenlenebilir olacak
                 </div>
                 <button id="startSurvey" class="w-full py-3 rounded text-white font-semibold gradient-bg hover:opacity-90 transition-opacity text-sm">
                     📊 Anketi Başlat
@@ -562,9 +581,23 @@ function loadParticipantTable() {
                                 document.getElementById('lastName').value = user.displayName ? user.displayName.split(' ').slice(1).join(' ') : '';
                                 userInfoDiv.textContent = `Giriş yapıldı: ${user.displayName} (${user.email})`;
                                 userInfoDiv.classList.remove('hidden');
-                                // Make name fields editable
-                                document.getElementById('firstName').readOnly = false;
-                                document.getElementById('lastName').readOnly = false;
+                                
+                                // Make name fields editable and update styling
+                                const firstNameField = document.getElementById('firstName');
+                                const lastNameField = document.getElementById('lastName');
+                                const nameFieldsInfo = document.getElementById('nameFieldsInfo');
+                                
+                                firstNameField.readOnly = false;
+                                lastNameField.readOnly = false;
+                                firstNameField.classList.remove('bg-gray-50');
+                                lastNameField.classList.remove('bg-gray-50');
+                                firstNameField.classList.add('bg-white');
+                                lastNameField.classList.add('bg-white');
+                                
+                                // Update info message
+                                nameFieldsInfo.innerHTML = '✅ Ad ve soyad alanları artık düzenlenebilir - Lütfen doğru bilgilerinizi girin';
+                                nameFieldsInfo.classList.remove('text-gray-500');
+                                nameFieldsInfo.classList.add('text-green-600', 'font-medium');
                             }
                         })
                         .catch((error) => {
@@ -860,6 +893,19 @@ function loadParticipantTable() {
             document.getElementById('adminPassword').addEventListener('keypress', function(e) {
                 if (e.key === 'Enter') loginAdmin();
             });
+            
+            // Ad/soyad alanları için hatırlatma
+            document.getElementById('firstName').addEventListener('focus', function() {
+                if (this.readOnly) {
+                    showModal('ℹ️ Bilgi', 'Ad ve soyad alanlarını düzenleyebilmek için önce Google ile giriş yapmanız gerekiyor.');
+                }
+            });
+            
+            document.getElementById('lastName').addEventListener('focus', function() {
+                if (this.readOnly) {
+                    showModal('ℹ️ Bilgi', 'Ad ve soyad alanlarını düzenleyebilmek için önce Google ile giriş yapmanız gerekiyor.');
+                }
+            });
         }
 
         function showModule(module) {
@@ -977,18 +1023,40 @@ function loadParticipantTable() {
             const lastName = document.getElementById('lastName').value.trim();
             const disclaimerAccepted = document.getElementById('acceptDisclaimer').checked;
 
-            // Google Sign-In enforcement
+            // Google Sign-In enforcement - Tüm kullanıcılar için zorunlu
             if (!googleUser) {
+                // Google butonunu vurgula ve dikkati çek
+                const googleBtn = document.getElementById('googleSignInBtn');
+                if (googleBtn) {
+                    googleBtn.style.animation = 'pulse 2s infinite';
+                    googleBtn.style.boxShadow = '0 0 20px #FF6B6B';
+                    googleBtn.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    
+                    // 5 saniye sonra efekti kaldır
+                    setTimeout(() => {
+                        googleBtn.style.animation = '';
+                        googleBtn.style.boxShadow = '';
+                    }, 5000);
+                }
+                
                 showModal(
-                    '🔒 Giriş Gerekli',
-                    `<div class="text-2xl font-extrabold text-red-700 mb-4">Google ile Giriş Yapmalısınız</div>
-                    <div class="text-base text-gray-800 mb-2">Ankete başlamadan önce kimliğinizi doğrulamanız gerekmektedir.</div>
-                    <ul class="list-disc pl-6 text-base text-gray-700 mb-4">
-                        <li>Yukarıdaki <b>Google ile Giriş Yap</b> butonunu kullanarak hesabınızla oturum açın.</li>
-                        <li>Giriş yaptıktan sonra ad ve soyad alanlarınız otomatik doldurulacak ve düzenlenebilir olacaktır.</li>
-                        <li>Gizliliğiniz korunur, bilgileriniz üçüncü kişilerle paylaşılmaz.</li>
-                    </ul>
-                    <div class="text-sm text-gray-500">Herhangi bir sorun yaşarsanız lütfen yöneticinizle iletişime geçin.</div>`
+                    '� ÖNCE GİRİŞ YAPMANIZ GEREK!',
+                    `<div class="text-center">
+                        <div class="text-3xl font-extrabold text-red-600 mb-4">⚠️ DURDURUN! ⚠️</div>
+                        <div class="text-xl font-bold text-gray-800 mb-4">Ankete başlamadan önce giriş yapmalısınız!</div>
+                        <div class="bg-yellow-100 border border-yellow-400 rounded p-4 mb-4">
+                            <p class="text-lg font-semibold text-yellow-800 mb-2">📍 NE YAPMANIZ GEREKİYOR:</p>
+                            <ol class="text-left list-decimal pl-6 text-gray-700 space-y-2">
+                                <li class="font-medium">Yukarıda bulunan <span class="bg-blue-100 px-2 py-1 rounded font-bold text-blue-800">Google ile Giriş Yap</span> düğmesine tıklayın</li>
+                                <li class="font-medium">Gmail hesabınızla giriş yapın</li>
+                                <li class="font-medium">Ad ve soyad alanlarınız otomatik dolacak</li>
+                                <li class="font-medium">Sonra tekrar <span class="bg-green-100 px-2 py-1 rounded font-bold text-green-800">Anketi Başlat</span> düğmesine tıklayın</li>
+                            </ol>
+                        </div>
+                        <div class="text-sm text-red-600 font-medium">
+                            ⏰ Bu adımı atlayamazsınız - Güvenlik zorunluluğu!
+                        </div>
+                    </div>`
                 );
                 return;
             }
