@@ -2297,92 +2297,53 @@ function loadParticipantTable() {
             );
 
             if (surveys.length === 0) {
-                document.getElementById('categoryDetailTitle').textContent = `📋 ${categoryName} - Veri Yok`;
-                document.getElementById('categoryDetailContent').innerHTML = `
-                    <div class="text-center py-8 text-gray-500">
-                        <p>Bu kategori için henüz anket verisi bulunmuyor.</p>
-                    </div>
-                `;
+                document.getElementById('categoryDetailTitle').textContent = `📋 ${categoryName} Detayları`;
+                document.getElementById('categoryDetailContent').innerHTML = '<div class="text-center text-gray-500 py-8">Bu kategoriye ait yanıt bulunamadı.</div>';
                 document.getElementById('categoryDetailModal').classList.add('show');
                 return;
             }
-
-            // Kategori soruları al
             const groupQuestions = questions[groupName];
             if (!groupQuestions) return;
-
-            // Soru index aralığını hesapla (her kategori 5 soru)
             const startIndex = categoryIndex * 5;
             const endIndex = startIndex + 5;
             const categoryQuestions = groupQuestions.slice(startIndex, endIndex);
-
-            // Her soru için cevapları topla
-            let detailHTML = `
-                <div class="mb-4 p-4 bg-blue-50 rounded-lg">
-                    <h3 class="text-lg font-semibold text-blue-800">${groupName} - ${categoryName}</h3>
-                    <p class="text-sm text-blue-600">Bu kategorideki soruların detaylı cevapları:</p>
-                </div>
-            `;
-
+            let detailHTML = `<div class="overflow-x-auto">
+                <table class="min-w-full text-xs border border-gray-300">
+                    <thead>
+                        <tr class="bg-gray-100">
+                            <th class="px-2 py-2 border">Soru</th>
+                            <th class="px-2 py-2 border">Hiç Memnun Değilim</th>
+                            <th class="px-2 py-2 border">Memnun Değilim</th>
+                            <th class="px-2 py-2 border">Kararsızım</th>
+                            <th class="px-2 py-2 border">Memnunum</th>
+                            <th class="px-2 py-2 border">Çok Memnunum</th>
+                            <th class="px-2 py-2 border">Toplam</th>
+                        </tr>
+                    </thead>
+                    <tbody>`;
             categoryQuestions.forEach((question, qIdx) => {
-                const actualQuestionIndex = startIndex + qIdx;
-                
-                // Bu soru için tüm cevapları topla
-                const questionScores = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
-                let totalAnswers = 0;
-                
-                surveys.forEach(survey => {
-                    if (survey.answers[actualQuestionIndex]) {
-                        const score = survey.answers[actualQuestionIndex].score;
-                        if (score >= 1 && score <= 5) {
-                            questionScores[score]++;
-                            totalAnswers++;
+                const counts = [0, 0, 0, 0, 0];
+                surveys.forEach(s => {
+                    if (s.answers && Array.isArray(s.answers)) {
+                        const answerObj = s.answers[startIndex + qIdx];
+                        if (answerObj && typeof answerObj.score === 'number' && answerObj.score >= 1 && answerObj.score <= 5) {
+                            counts[answerObj.score - 1]++;
                         }
                     }
                 });
-
-                // Skor etiketleri
-                const scoreLabels = {
-                    1: 'Hiç Memnun Değilim',
-                    2: 'Memnun Değilim', 
-                    3: 'Kararsızım',
-                    4: 'Memnunum',
-                    5: 'Çok Memnunum'
-                };
-
-                // En yüksek skorlu cevabı bul
-                let maxScore = 0;
-                let maxScoreLabel = '';
-                Object.keys(questionScores).forEach(score => {
-                    if (questionScores[score] > maxScore) {
-                        maxScore = questionScores[score];
-                        maxScoreLabel = scoreLabels[score];
-                    }
-                });
-
-                detailHTML += `
-                    <div class="mb-4 p-4 border rounded-lg ${maxScore > 0 && maxScore === questionScores[1] ? 'bg-red-50 border-red-200' : maxScore === questionScores[5] ? 'bg-green-50 border-green-200' : 'bg-gray-50 border-gray-200'}">
-                        <h4 class="font-medium text-gray-800 mb-2">${qIdx + 1}. ${question}</h4>
-                        <div class="grid grid-cols-5 gap-2 text-sm">
-                            ${Object.keys(scoreLabels).map(score => {
-                                const count = questionScores[score];
-                                const percentage = totalAnswers > 0 ? Math.round((count / totalAnswers) * 100) : 0;
-                                const isMax = count === maxScore && count > 0;
-                                return `
-                                    <div class="text-center p-2 rounded ${isMax ? 'bg-blue-100 font-bold' : 'bg-white'}">
-                                        <div class="text-xs text-gray-600">${scoreLabels[score]}</div>
-                                        <div class="font-semibold ${isMax ? 'text-blue-600' : 'text-gray-800'}">${count}</div>
-                                        <div class="text-xs text-gray-500">${percentage}%</div>
-                                    </div>
-                                `;
-                            }).join('')}
-                        </div>
-                        ${totalAnswers > 0 ? `<div class="mt-2 text-sm text-gray-600">En çok verilen cevap: <span class="font-semibold">${maxScoreLabel}</span> (${maxScore} kişi)</div>` : '<div class="text-sm text-gray-500">Bu soru için henüz cevap yok</div>'}
-                    </div>
-                `;
+                const maxCount = Math.max(...counts);
+                const total = counts.reduce((a, b) => a + b, 0);
+                detailHTML += `<tr>
+                    <td class="border px-2 py-2 text-left">${question}</td>
+                    ${counts.map((count, idx) => {
+                        const isMax = count === maxCount && maxCount > 0;
+                        return `<td class="border px-2 py-2 font-semibold${isMax ? ' text-red-600 bg-red-50' : ''}">${count}</td>`;
+                    }).join('')}
+                    <td class="border px-2 py-2 font-bold bg-gray-50">${total}</td>
+                </tr>`;
             });
-
-            // Modal'ı güncelle ve göster
+            detailHTML += `</tbody></table></div>
+            <div class="text-xs text-gray-500 mt-2">En çok işaretlenen şık kırmızı renkte gösterilir. Toplam sütunu, o soruya verilen toplam yanıt sayısıdır.</div>`;
             document.getElementById('categoryDetailTitle').textContent = `📋 ${categoryName} Detayları`;
             document.getElementById('categoryDetailContent').innerHTML = detailHTML;
             document.getElementById('categoryDetailModal').classList.add('show');
