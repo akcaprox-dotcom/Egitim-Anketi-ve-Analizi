@@ -1600,17 +1600,10 @@ function loadParticipantTable() {
             // Tablo başlıkları düşükten yükseğe sıralanmalı (soldan sağa)
             const satisfactionLabels = ['Hiç Memnun Değilim', 'Memnun Değilim', 'Kararsızım', 'Memnunum', 'Çok Memnunum'];
 
-            // Soru index aralıkları (örnek, gerçek indexler soru setine göre ayarlanmalı)
-            const groupRanges = {
-                'Mavi Yaka': [0, 49],
-                'Beyaz Yaka': [50, 99],
-                'Yönetim': [100, 149]
-            };
-
             // Her grup ve kategori için frekansları hesapla
-            function getCategoryIndexes(group, catIdx) {
-                // Her kategori 5 soru ise:
-                const start = groupRanges[group][0] + catIdx * 5;
+            function getCategoryIndexes(catIdx) {
+                // Her kategori 5 soru ise, 0'dan başlar
+                const start = catIdx * 5;
                 const end = start + 4;
                 return [start, end];
             }
@@ -1633,8 +1626,10 @@ function loadParticipantTable() {
                 let groupTotal = 0;
                 groupSurveys.forEach(s => {
                     s.answers.forEach(a => {
-                        groupCounts[a.score - 1]++;
-                        groupTotal++;
+                        if (a && typeof a.score === 'number' && a.score >= 1 && a.score <= 5) {
+                            groupCounts[a.score - 1]++;
+                            groupTotal++;
+                        }
                     });
                 });
                 let groupPercents = groupCounts.map(c => groupTotal ? (c * 100 / groupTotal).toFixed(1) + '%' : '0.0%');
@@ -1648,11 +1643,11 @@ function loadParticipantTable() {
                     let catCounts = [0, 0, 0, 0, 0];
                     let catTotal = 0;
                     groupSurveys.forEach(s => {
-                        // Sadece ilgili kategoriye ait sorular
-                        const [start, end] = getCategoryIndexes(group.name, catIdx);
+                        // Sadece ilgili kategoriye ait sorular (her survey için 0'dan başlar)
+                        const [start, end] = getCategoryIndexes(catIdx);
                         for (let i = start; i <= end && i < s.answers.length; i++) {
                             const score = s.answers[i]?.score;
-                            if (score >= 1 && score <= 5) {
+                            if (typeof score === 'number' && score >= 1 && score <= 5) {
                                 catCounts[score - 1]++;
                                 catTotal++;
                             }
