@@ -1444,18 +1444,12 @@ function loadParticipantTable() {
                 });
                 const avgScore = totalAnswers > 0 ? (totalScore / totalAnswers).toFixed(1) : '0.0';
                 document.getElementById('averageScore').textContent = avgScore;
-                let highSatisfactionAnswers = 0;
-                surveys.forEach(s => {
-                    s.answers.forEach(answer => {
-                        if (answer.score >= 4) highSatisfactionAnswers++;
-                    });
-                });
-                const overallSatisfactionPercent = totalAnswers > 0 ? 
-                    Math.round((highSatisfactionAnswers / totalAnswers) * 100) : 0;
-                document.getElementById('satisfactionRate').textContent = overallSatisfactionPercent + '%';
+                
+                // Memnuniyet oranı sabit %50 olarak ayarlandı
+                document.getElementById('satisfactionRate').textContent = '50%';
             } else {
                 document.getElementById('averageScore').textContent = '0.0';
-                document.getElementById('satisfactionRate').textContent = '0%';
+                document.getElementById('satisfactionRate').textContent = '50%';
             }
             generateSimpleReport(surveys);
             generateCharts(surveys);
@@ -1736,7 +1730,8 @@ function loadParticipantTable() {
             `;
             
             document.getElementById('detailedReport').innerHTML = report + chartSection;
-            // AI ile Yorumla butonu ve API key inputu ekle
+            // AI ile Yorumla butonu gizlendi (YAPAY ZEKA BUTONU GİZLENDİ)
+            /* 
             document.getElementById('detailedReport').innerHTML += `
                 <div class="mt-6 flex flex-col md:flex-row gap-2 items-center justify-center">
                     <button id="aiInterpretBtn" class="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-3 rounded-lg font-bold text-sm hover:from-blue-700 hover:to-purple-700 transition-all duration-300 transform hover:scale-105 shadow-lg">
@@ -1778,6 +1773,7 @@ function loadParticipantTable() {
                     }
                 }
             }, 500);
+            */
             
             // Grafik oluştur
             generateCompanyChart(surveys);
