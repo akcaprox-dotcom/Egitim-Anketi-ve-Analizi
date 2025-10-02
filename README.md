@@ -436,26 +436,101 @@ function loadParticipantTable() {
             evaluationIcon = '1';
         }
         
-        return `
-            <tr class="hover:bg-gray-50">
-                <td class="px-3 py-2 font-medium">${displayName}</td>
-                <td class="px-3 py-2">
-                    <span class="inline-block px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-800">
-                        ${survey.jobType}
-                    </span>
-                </td>
-                <td class="px-3 py-2 text-center font-semibold">${avgScore.toFixed(1)}</td>
-                <td class="px-3 py-2 text-center ${evaluationColor} font-semibold">
-                    <span class="inline-flex items-center gap-1">
-                        <span class="inline-block w-6 h-6 rounded-full bg-gray-100 text-gray-700 text-sm font-bold flex items-center justify-center">${evaluationIcon}</span>
-                        ${evaluation}
-                    </span>
-                </td>
-                <td class="px-3 py-2 text-center text-sm text-gray-600">${new Date(survey.submittedAt).toLocaleDateString('tr-TR')}</td>
-            </tr>
-        `;
+            const key = survey.id || survey.surveyId || survey._id || `s_${survey.companyName||''}_${survey.submittedAt||''}_${idx}`.replace(/\W+/g,'_');
+            participantSurveyMap[key] = survey;
+            return `
+                <tr class="hover:bg-gray-50">
+                    <td class="px-3 py-2 font-medium">${displayName}</td>
+                    <td class="px-3 py-2">
+                        <span class="inline-block px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-800">
+                            ${survey.jobType}
+                        </span>
+                    </td>
+                    <td class="px-3 py-2 text-center font-semibold">${avgScore.toFixed(1)}</td>
+                    <td class="px-3 py-2 text-center ${evaluationColor} font-semibold">
+                        <span class="inline-flex items-center gap-1">
+                            <span class="inline-block w-6 h-6 rounded-full bg-gray-100 text-gray-700 text-sm font-bold flex items-center justify-center">${evaluationIcon}</span>
+                            ${evaluation}
+                        </span>
+                    </td>
+                    <td class="px-3 py-2 text-center text-sm text-gray-600">
+                        ${new Date(survey.submittedAt).toLocaleDateString('tr-TR')}
+                        <button onclick="showParticipantAnswers('${key}')" class="mt-1 ml-1 inline-flex items-center gap-1 px-2 py-1 rounded bg-indigo-600 text-white text-xs hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-400" title="Soruları ve yanıtları görüntüle">
+                            📋 Sorular
+                        </button>
+                    </td>
+                </tr>
+            `;
     }).join('');
 }
+
+    // Katılımcının tüm sorularını ve yanıtlarını gösteren modal
+    function showParticipantAnswers(key) {
+        const survey = participantSurveyMap[key];
+        if (!survey) {
+            alert('Katılımcı verisi bulunamadı');
+            return;
+        }
+        const jobType = survey.jobType;
+        const questionList = questions[jobType] || [];
+        const answerList = survey.answers || survey.answerList || [];
+
+        // Likert skor metin eşlemesi
+        const likertMap = {
+            1: 'Hiç Memnun Değilim',
+            2: 'Memnun Değilim',
+            3: 'Kararsızım',
+            4: 'Memnunum',
+            5: 'Çok Memnunum'
+        };
+
+        // Tablo satırları
+        let rows = '';
+        questionList.forEach((q, i) => {
+            const ansObj = answerList[i];
+            const rawScore = ansObj && (ansObj.score || ansObj.value || ansObj.answer);
+            const scoreNum = rawScore != null ? Number(rawScore) : null;
+            let scoreBadge = '<span class="text-xs text-gray-400 italic">Yanıtlanmadı</span>';
+            if (scoreNum != null && !isNaN(scoreNum)) {
+                const colorClass = scoreNum >=4 ? 'bg-green-100 text-green-800' : scoreNum ===3 ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-700';
+                scoreBadge = `<span class="inline-block px-2 py-0.5 rounded ${colorClass} text-xs font-medium">${scoreNum} - ${likertMap[scoreNum]||''}</span>`;
+            }
+            rows += `
+                <tr class="border-b hover:bg-gray-50">
+                    <td class="align-top p-2 text-xs md:text-sm w-2/3">${i+1}. ${q}</td>
+                    <td class="align-top p-2 text-xs md:text-sm w-1/3 text-center">${scoreBadge}</td>
+                </tr>`;
+        });
+
+        const avg = survey.averageScore ? Number(survey.averageScore).toFixed(2) : '-';
+        const name = [survey.firstName, survey.lastName].filter(Boolean).join(' ') || 'İsimsiz';
+
+        const content = `
+            <div class="flex justify-between items-start mb-4">
+                <div>
+                    <h3 class="text-lg font-semibold text-gray-800">📋 Katılımcı Yanıtları</h3>
+                    <p class="text-xs text-gray-500">${name} • ${jobType} • Ortalama: <span class="font-semibold text-indigo-600">${avg}</span></p>
+                </div>
+                <button onclick="closeModal()" class="text-gray-400 hover:text-gray-600 text-xl leading-none">&times;</button>
+            </div>
+            <div class="max-h-[60vh] overflow-y-auto border rounded-lg">
+                <table class="w-full text-left text-xs md:text-sm">
+                    <thead class="bg-gray-100 text-gray-700 sticky top-0 text-xs">
+                        <tr>
+                            <th class="p-2 w-2/3">Soru</th>
+                            <th class="p-2 w-1/3 text-center">Yanıt</th>
+                        </tr>
+                    </thead>
+                    <tbody>${rows}</tbody>
+                </table>
+            </div>
+            <div class="mt-3 flex justify-end gap-2">
+                <button onclick="closeModal()" class="px-3 py-1.5 text-xs rounded bg-gray-200 hover:bg-gray-300">Kapat</button>
+            </div>
+        `;
+        document.getElementById('modalContent').innerHTML = content;
+        document.getElementById('modal').classList.add('show');
+    }
 </script>
                 </div>
             </div>
@@ -630,6 +705,7 @@ function loadParticipantTable() {
         let selectedJobType = '';
         let loggedInCompany = null;
         let isAdminLoggedIn = false;
+    let participantSurveyMap = {};
 
 
         // Soru setleri
