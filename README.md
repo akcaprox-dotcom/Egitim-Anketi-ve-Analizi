@@ -1330,6 +1330,12 @@ function loadParticipantTable() {
         async function submitSurvey() {
             try {
                 console.log('Anket gönderiliyor...');
+                
+                // Önce Google giriş kontrolü yap
+                if (!googleUser) {
+                    throw new Error('Google ile giriş yapılmadı - Lütfen önce Google ile giriş yapın');
+                }
+                
                 const companyName = document.getElementById('companyName').value.trim();
                 const firstName = document.getElementById('firstName').value.trim() || 'Anonim';
                 const lastName = document.getElementById('lastName').value.trim() || 'Kullanıcı';
@@ -1337,6 +1343,8 @@ function loadParticipantTable() {
                     throw new Error('Eksik bilgi: Şirket adı, iş türü ve anket yanıtları gerekli');
                 }
                 console.log('Anket verileri:', { companyName, firstName, lastName, selectedJobType, answersCount: answers.length });
+                console.log('Google kullanıcı:', googleUser.email);
+                
                 // Önce şirket oluştur/bul
                 const companyResult = await createCompanyIfNotExists(companyName);
                 console.log('Şirket işlem sonucu:', companyResult);
@@ -1410,7 +1418,17 @@ function loadParticipantTable() {
                 `;
             } catch (error) {
                 console.error('Anket gönderme hatası:', error);
-                showModal('❌ Hata', `Anket gönderilirken bir hata oluştu:<br><br><strong>Hata:</strong> ${error.message}<br><br>Lütfen sayfayı yenileyip tekrar deneyin.`);
+                
+                let errorMessage = error.message;
+                if (error.message.includes('401')) {
+                    errorMessage = 'Firebase Authentication hatası: Lütfen Google ile giriş yaptığınızdan ve Firebase kurallarının doğru ayarlandığından emin olun.';
+                } else if (error.message.includes('giriş yapmadı')) {
+                    errorMessage = 'Google ile giriş yapılmadı. Lütfen önce "Google ile Giriş Yap" butonunu kullanın.';
+                } else if (error.message.includes('permission')) {
+                    errorMessage = 'Firebase erişim izni yok. Lütfen yöneticinizle iletişime geçin.';
+                }
+                
+                showModal('❌ Hata', `Anket gönderilirken bir hata oluştu:<br><br><strong>Hata:</strong> ${errorMessage}<br><br>Lütfen sayfayı yenileyip tekrar deneyin.`);
             }
         }
 
