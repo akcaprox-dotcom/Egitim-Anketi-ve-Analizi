@@ -548,16 +548,16 @@ function loadParticipantTable() {
     </div>
 
     <script>
-        // Firebase config
+        // Firebase config - İŞLETME PROJESİ için DOĞRU yapılandırma
         const firebaseConfig = {
-            apiKey: "AIzaSyDp2Yh8hamXi6OTfw03MT0S4rp5CjnlAcg",
-            authDomain: "akcaprox-anket.firebaseapp.com",
-            projectId: "akcaprox-anket",
-            storageBucket: "akcaprox-anket.appspot.com",
-            messagingSenderId: "426135179922",
-            appId: "1:426135179922:web:c16b3fd6fa5f3d9224cc4b",
-            measurementId: "G-CD1ET7RGX1",
-            databaseURL: "https://isletme-76bad-default-rtdb.europe-west1.firebasedatabase.app/"
+            apiKey: "AIzaSyCUtHEvUGKVuoVaNt-xBBOkP75JGwYTxk8",
+            authDomain: "isletme-76bad.firebaseapp.com",
+            databaseURL: "https://isletme-76bad-default-rtdb.europe-west1.firebasedatabase.app",
+            projectId: "isletme-76bad",
+            storageBucket: "isletme-76bad.firebasestorage.app",
+            messagingSenderId: "886306069576",
+            appId: "1:886306069576:web:cb8d20cf5c1400d2170c7d",
+            measurementId: "G-3LTHYMM935"
         };
         firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
@@ -1191,15 +1191,67 @@ function loadParticipantTable() {
             }
         }
 
+        // Firebase Auth token'ını güvenli şekilde al
+        async function getFirebaseAuthToken() {
+            return new Promise((resolve, reject) => {
+                const user = firebase.auth().currentUser;
+                console.log('Auth kontrol - Mevcut kullanıcı:', user ? user.email : 'null');
+                if (user) {
+                    console.log('Token alınıyor...');
+                    user.getIdToken().then(token => {
+                        console.log('Token başarıyla alındı:', token.substring(0, 50) + '...');
+                        resolve(token);
+                    }).catch(error => {
+                        console.error('Token alma hatası:', error);
+                        reject(error);
+                    });
+                } else {
+                    // Kullanıcı giriş yapmamışsa auth state değişimini bekle
+                    console.log('Kullanıcı giriş yapmamış, auth state değişimi bekleniyor...');
+                    const unsubscribe = firebase.auth().onAuthStateChanged((user) => {
+                        unsubscribe();
+                        if (user) {
+                            console.log('Auth state değişti, token alınıyor...');
+                            user.getIdToken().then(token => {
+                                console.log('Token başarıyla alındı:', token.substring(0, 50) + '...');
+                                resolve(token);
+                            }).catch(error => {
+                                console.error('Token alma hatası:', error);
+                                reject(error);
+                            });
+                        } else {
+                            console.error('Auth state değişti ama kullanıcı hala null');
+                            reject(new Error('Kullanıcı giriş yapmamış - Firebase erişimi için Google ile giriş yapın'));
+                        }
+                    });
+                }
+            });
+        }
+
         async function loadFromFirebase() {
             try {
-                const response = await fetch(FIREBASE_DB_URL + 'surveyData.json');
-                if (!response.ok) throw new Error('Firebase veri yükleme hatası');
+                console.log('Firebase veri yükleme başlıyor...');
+                // Firebase Auth token'ını güvenli şekilde al
+                const token = await getFirebaseAuthToken();
+                const url = `${FIREBASE_DB_URL}surveyData.json?auth=${token}`;
+                console.log('Firebase URL:', FIREBASE_DB_URL);
+                console.log('İstek gönderiliyor...');
+                
+                const response = await fetch(url);
+                console.log('Firebase response status:', response.status);
+                if (!response.ok) {
+                    throw new Error(`Firebase HTTP hatası: ${response.status} - ${response.statusText}`);
+                }
                 const data = await response.json();
+                console.log('Firebase veri başarıyla yüklendi');
                 systemData.surveyData = data || { companies: {}, responses: [], statistics: {} };
                 return systemData.surveyData;
             } catch (error) {
                 console.error('Firebase yükleme hatası:', error);
+                // Auth hatası durumunda kullanıcıyı bilgilendir
+                if (error.message.includes('giriş yapmamış')) {
+                    showModal('🔒 Giriş Gerekli', 'Firebase veritabanına erişim için Google ile giriş yapmanız gerekiyor.');
+                }
                 systemData.surveyData = { companies: {}, responses: [], statistics: {} };
                 return systemData.surveyData;
             }
@@ -1207,15 +1259,30 @@ function loadParticipantTable() {
 
         async function saveToFirebase(data) {
             try {
-                const response = await fetch(FIREBASE_DB_URL + 'surveyData.json', {
+                console.log('Firebase veri kaydetme başlıyor...');
+                // Firebase Auth token'ını güvenli şekilde al
+                const token = await getFirebaseAuthToken();
+                const url = `${FIREBASE_DB_URL}surveyData.json?auth=${token}`;
+                console.log('Firebase kayıt URL:', FIREBASE_DB_URL);
+                console.log('Kaydet isteği gönderiliyor...');
+                
+                const response = await fetch(url, {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(data)
                 });
-                if (!response.ok) return { success: false, error: 'Firebase veri kaydetme hatası' };
+                console.log('Firebase kayıt response status:', response.status);
+                if (!response.ok) {
+                    throw new Error(`Firebase HTTP hatası: ${response.status} - ${response.statusText}`);
+                }
+                console.log('Firebase veri başarıyla kaydedildi');
                 return { success: true };
             } catch (error) {
-                console.error('Firebase bağlantı hatası:', error);
+                console.error('Firebase kayıt hatası:', error);
+                // Auth hatası durumunda kullanıcıyı bilgilendir
+                if (error.message.includes('giriş yapmamış')) {
+                    showModal('🔒 Giriş Gerekli', 'Firebase veritabanına kayıt için Google ile giriş yapmanız gerekiyor.');
+                }
                 return { success: false, error: error.message };
             }
         }
@@ -1444,12 +1511,18 @@ function loadParticipantTable() {
                 });
                 const avgScore = totalAnswers > 0 ? (totalScore / totalAnswers).toFixed(1) : '0.0';
                 document.getElementById('averageScore').textContent = avgScore;
-                
-                // Memnuniyet oranı sabit %50 olarak ayarlandı
-                document.getElementById('satisfactionRate').textContent = '50%';
+                let highSatisfactionAnswers = 0;
+                surveys.forEach(s => {
+                    s.answers.forEach(answer => {
+                        if (answer.score >= 4) highSatisfactionAnswers++;
+                    });
+                });
+                const overallSatisfactionPercent = totalAnswers > 0 ? 
+                    Math.round((highSatisfactionAnswers / totalAnswers) * 100) : 0;
+                document.getElementById('satisfactionRate').textContent = overallSatisfactionPercent + '%';
             } else {
                 document.getElementById('averageScore').textContent = '0.0';
-                document.getElementById('satisfactionRate').textContent = '50%';
+                document.getElementById('satisfactionRate').textContent = '0%';
             }
             generateSimpleReport(surveys);
             generateCharts(surveys);
@@ -1730,8 +1803,7 @@ function loadParticipantTable() {
             `;
             
             document.getElementById('detailedReport').innerHTML = report + chartSection;
-            // AI ile Yorumla butonu gizlendi (YAPAY ZEKA BUTONU GİZLENDİ)
-            /* 
+            /* AI ile Yorumla butonu gizlendi - YAPAY ZEKA HESAPLA butonu kaldırıldı
             document.getElementById('detailedReport').innerHTML += `
                 <div class="mt-6 flex flex-col md:flex-row gap-2 items-center justify-center">
                     <button id="aiInterpretBtn" class="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-3 rounded-lg font-bold text-sm hover:from-blue-700 hover:to-purple-700 transition-all duration-300 transform hover:scale-105 shadow-lg">
