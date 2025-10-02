@@ -5,6 +5,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Akça Pro X - Kurumsal Anket ve Raporlama Sistemi</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        // Tailwind CSS production uyarısını gizle
+        const originalWarn = console.warn;
+        console.warn = function(message) {
+            if (typeof message === 'string' && message.includes('tailwindcss.com should not be used in production')) {
+                return;
+            }
+            originalWarn.apply(console, arguments);
+        };
+    </script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <!-- Firebase App (the core Firebase SDK) -->
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
@@ -852,6 +862,25 @@ function loadParticipantTable() {
             loadSystemData(); // Sistem verilerini yükle
             // loadDemoData();
         });
+
+        // Modal fonksiyonu
+        function showModal(title, content) {
+            const modal = document.getElementById('modal');
+            const modalContent = document.getElementById('modalContent');
+            if (modal && modalContent) {
+                modalContent.innerHTML = `
+                    <h3 class="text-lg font-semibold mb-4">${title}</h3>
+                    <div class="mb-4">${content}</div>
+                    <button onclick="document.getElementById('modal').classList.remove('show')" class="w-full py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                        Tamam
+                    </button>
+                `;
+                modal.classList.add('show');
+            } else {
+                // Fallback - basit alert
+                alert(title + '\n\n' + content.replace(/<[^>]*>/g, ''));
+            }
+        }
 
         function setupEventListeners() {
             // Sorumluluk reddi checkbox
